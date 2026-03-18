@@ -17,6 +17,15 @@ export const initDb = async () => {
 
   if (savedData) {
     db = new SQL.Database(new Uint8Array(savedData));
+
+    // Ensure table exists for older databases
+    db.run(`
+      CREATE TABLE IF NOT EXISTS memoria_human_in_the_loop (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        palabra_clave TEXT UNIQUE,
+        categoria_asignada TEXT
+      );
+    `);
   } else {
     db = new SQL.Database();
 
@@ -39,6 +48,12 @@ export const initDb = async () => {
         descripcion_hito TEXT,
         gravedad INTEGER CHECK (gravedad BETWEEN 1 AND 5),
         FOREIGN KEY(documento_id) REFERENCES documentos(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS memoria_human_in_the_loop (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        palabra_clave TEXT UNIQUE,
+        categoria_asignada TEXT
       );
     `);
 

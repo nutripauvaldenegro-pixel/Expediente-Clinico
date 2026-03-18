@@ -10,7 +10,26 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
   const ocrResult = await procesarDocumento(file, onProgress);
 
   // 2. Clasificación Heurística
-  const clasificacion = clasificarDocumento(ocrResult.textoNormalizado);
+  let clasificacion = clasificarDocumento(ocrResult.textoNormalizado);
+
+  // 2.1 Verificar Memoria "Human-in-the-loop"
+  try {
+    const memoria = db.exec(`SELECT palabra_clave, categoria_asignada FROM memoria_human_in_the_loop`);
+    if (memoria.length > 0) {
+      for (const row of memoria[0].values) {
+        const [palabraClave, catAsignada] = row;
+        if (ocrResult.textoNormalizado.includes(palabraClave.toLowerCase())) {
+          clasificacion.categoria = catAsignada;
+          clasificacion.esAmbigua = false;
+          // Guardamos en log que fue por memoria
+          clasificacion.puntuaciones['HITL_OVERRIDE'] = 100;
+          break; // Tomar la primera coincidencia
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error leyendo memoria HITL", e);
+  }
 
   // 3. Extracción de Datos Evolucionada (Fechas)
   const fechaStr = extraerFechaPrincipal(ocrResult.textoPlano, ocrResult.coordenadas);
@@ -55,6 +74,19 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
     ]);
 
     stmt.free();
+
+    // 6. Inserción de Eventos (Ejemplo simulado de "Orden Médica" y "Resultado")
+    // Para probar el reporte de tiempos, agregamos eventos cronológicos automáticamente basados en la categoría
+    const lastInsertId = db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+
+    if (fechaSql) {
+      if (clasificacion.categoria === "Receta Medica") {
+        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Orden Médica Emitida', 3)`, [lastInsertId, fechaSql]);
+      } else if (clasificacion.categoria === "Laboratorio" || clasificacion.categoria === "Radiologia") {
+        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Resultado Reportado', 2)`, [lastInsertId, fechaSql]);
+      }
+    }
+
     await saveDb();
 
     return true;

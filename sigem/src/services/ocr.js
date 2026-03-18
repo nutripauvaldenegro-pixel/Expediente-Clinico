@@ -14,13 +14,12 @@ export const mejorarImagen = (fileOrBlob) => {
       canvas.width = img.width;
       canvas.height = img.height;
 
-      // Dibujar la imagen original
-      ctx.drawImage(img, 0, 0);
-
       // Aquí se podrían aplicar filtros nativos de Canvas (contraste, escala de grises, etc.)
-      // Para un simple mejora de legibilidad:
+      // Para un simple mejora de legibilidad aplicamos el filtro antes de dibujar:
       ctx.filter = 'contrast(1.5) grayscale(1)';
-      ctx.drawImage(canvas, 0, 0);
+
+      // Dibujar la imagen original con el filtro aplicado
+      ctx.drawImage(img, 0, 0);
 
       canvas.toBlob((blob) => {
         resolve(blob);
@@ -38,6 +37,9 @@ export const mejorarImagen = (fileOrBlob) => {
 export const procesarOCR = async (file, onProgress) => {
   try {
     const worker = await createWorker(TESSERACT_LANG, 1, {
+      workerPath: '/tesseract/worker.min.js',
+      corePath: '/tesseract/tesseract-core.wasm.js',
+      langPath: '/tesseract',
       logger: m => {
         if (m.status === 'recognizing text' && onProgress) {
           onProgress(m.progress);
