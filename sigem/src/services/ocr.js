@@ -36,10 +36,13 @@ export const mejorarImagen = (fileOrBlob) => {
 
 export const procesarOCR = async (file, onProgress) => {
   try {
+    // Definir dinámicamente el host basado en window.location para que sea portable (ej: localhost o GitHub Pages)
+    const baseUrl = window.location.origin;
+
     const worker = await createWorker(TESSERACT_LANG, 1, {
-      workerPath: '/tesseract/worker.min.js',
-      corePath: '/tesseract/tesseract-core.wasm.js',
-      langPath: '/tesseract',
+      workerPath: `${baseUrl}/tesseract/worker.min.js`,
+      corePath: `${baseUrl}/tesseract/tesseract-core.wasm.js`,
+      langPath: `${baseUrl}/tesseract`,
       logger: m => {
         if (m.status === 'recognizing text' && onProgress) {
           onProgress(m.progress);
@@ -67,7 +70,7 @@ export const procesarOCR = async (file, onProgress) => {
     const textoNormalizado = normalizarTexto(textoPlano);
 
     // Formato de coordenadas estructuradas a partir del hOCR o de los "words" de Tesseract
-    const coordenadas = data.words.map(w => ({
+    const coordenadas = (data.words || []).map(w => ({
       text: w.text,
       x0: w.bbox.x0,
       y0: w.bbox.y0,
@@ -80,7 +83,7 @@ export const procesarOCR = async (file, onProgress) => {
       textoPlano,
       textoNormalizado,
       coordenadas,
-      confidence: data.confidence,
+      confidence: data.confidence || 0,
       ocrDataRaw: JSON.stringify(coordenadas) // Para guardar en JSON metadata
     };
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDb } from '../db';
 import { procesarYGuardarDocumento } from '../services/dbServices';
-import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File } from 'lucide-react';
+import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File, Activity, FileText } from 'lucide-react';
 
 export default function DocumentManager({ onUpdateStats }) {
   const [documents, setDocuments] = useState([]);
