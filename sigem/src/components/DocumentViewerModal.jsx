@@ -43,6 +43,47 @@ const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
   return <canvas ref={canvasRef} className="bg-white shadow-md mb-8 mx-auto block max-w-full rounded" />;
 };
 
+// Componente externo para renderizar una miniatura del PDF
+const PdfThumbnail = ({ pdfDoc, pageNumber, scale = 0.3 }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current) return;
+    let renderTask = null;
+
+    const renderPage = async () => {
+      try {
+        const page = await pdfDoc.getPage(pageNumber);
+        const viewport = page.getViewport({ scale });
+        const canvas = canvasRef.current;
+
+        if (!canvas) return;
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = { canvasContext: context, viewport: viewport };
+        renderTask = page.render(renderContext);
+        await renderTask.promise;
+      } catch (e) {
+        if (e.name !== 'RenderingCancelledException') {
+          console.error(`Error rendering thumbnail page ${pageNumber}`, e);
+        }
+      }
+    };
+
+    renderPage();
+
+    return () => {
+      if (renderTask) {
+        renderTask.cancel();
+      }
+    };
+  }, [pdfDoc, pageNumber, scale]);
+
+  return <canvas ref={canvasRef} className="bg-white shadow-sm rounded-sm object-contain w-12 h-auto" />;
+};
+
 export default function DocumentViewerModal({ documentId, db, onClose }) {
   const [docData, setDocData] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
@@ -164,9 +205,14 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                     <span className="text-xs font-mono text-slate-500 font-medium flex items-center min-w-[3rem] justify-center">{Math.round(scale * 100)}%</span>
                     <button onClick={() => setScale(s => Math.min(3, s + 0.25))} className="p-1 hover:bg-slate-200 rounded-full text-slate-600 transition-colors"><ZoomIn className="w-4 h-4" /></button>
                   </div>
-                  <div className="w-full h-full flex flex-col items-center space-y-6">
+                  <div className="w-full h-full flex flex-col items-center space-y-12">
                     {Array.from(new Array(numPages || 1), (el, index) => (
-                       <PdfPage key={`page_${index + 1}`} pdfDoc={pdfDoc} pageNumber={index + 1} scale={scale} />
+                       <div key={`page_wrapper_${index + 1}`} className="flex flex-col items-center w-full relative">
+                         <div className="bg-slate-800 text-slate-50 text-[10px] font-bold font-mono tracking-wider px-3 py-1 rounded-full shadow-lg mb-3 z-10">
+                           PÁGINA {index + 1} DE {numPages || 1}
+                         </div>
+                         <PdfPage pdfDoc={pdfDoc} pageNumber={index + 1} scale={scale} />
+                       </div>
                     ))}
                   </div>
                 </div>
@@ -189,18 +235,36 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
           {activeView === 'metadata' && (
             <div className="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6 max-w-5xl mx-auto w-full bg-white">
 
-              {/* Selector de página para metadatos granulares */}
+              {/* Selector de página para metadatos granulares con miniatura */}
               {docData.metadata?.paginas_granulares && docData.metadata.paginas_granulares.length > 1 && (
-                <div className="w-full md:w-64 shrink-0 space-y-2">
+                <div className="w-full md:w-72 shrink-0 space-y-2">
                   <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Navegador de Páginas</h4>
                   {docData.metadata.paginas_granulares.map((pag, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActivePageIdx(idx)}
-                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${activePageIdx === idx ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+                      className={`w-full text-left p-3 flex items-center gap-3 rounded-xl border text-sm transition-all ${activePageIdx === idx ? 'bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
                     >
-                      <div className="font-bold text-slate-800">Página {pag.pageNumber}</div>
-                      <div className="text-xs text-slate-500 mt-1 truncate">{pag.categoria}</div>
+                      {/* Miniatura (si es PDF) o icono genérico */}
+                      <div className="w-12 h-16 bg-slate-200 rounded flex items-center justify-center overflow-hidden border border-slate-300 shrink-0 shadow-inner">
+                        {pdfDoc ? (
+                           <PdfThumbnail pdfDoc={pdfDoc} pageNumber={pag.pageNumber} />
+                        ) : (
+                           <FileText className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-bold text-sm ${activePageIdx === idx ? 'text-indigo-900' : 'text-slate-800'}`}>
+                          Página {pag.pageNumber}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-0.5 truncate uppercase tracking-wider font-semibold">
+                          {pag.categoria}
+                        </div>
+                        <div className="text-xs text-slate-400 mt-0.5 font-mono truncate">
+                          {pag.fecha || 'Sin fecha'}
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>
