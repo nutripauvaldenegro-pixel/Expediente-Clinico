@@ -1,12 +1,57 @@
-import { useState, useEffect } from 'react';
-import { X, FileText, Fingerprint, Eye } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, FileText, Fingerprint, Eye, ZoomIn, ZoomOut } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Componente externo para renderizar una página del PDF
+const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current) return;
+    let renderTask = null;
+
+    const renderPage = async () => {
+      try {
+        const page = await pdfDoc.getPage(pageNumber);
+        const viewport = page.getViewport({ scale });
+        const canvas = canvasRef.current;
+
+        if (!canvas) return;
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = { canvasContext: context, viewport: viewport };
+        renderTask = page.render(renderContext);
+        await renderTask.promise;
+      } catch (e) {
+        if (e.name !== 'RenderingCancelledException') {
+          console.error(`Error rendering page ${pageNumber}`, e);
+        }
+      }
+    };
+
+    renderPage();
+
+    return () => {
+      if (renderTask) {
+        renderTask.cancel();
+      }
+    };
+  }, [pdfDoc, pageNumber, scale]);
+
+  return <canvas ref={canvasRef} className="bg-white shadow-md mb-8 mx-auto block max-w-full rounded" />;
+};
 
 export default function DocumentViewerModal({ documentId, db, onClose }) {
   const [docData, setDocData] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
+  const [pdfDoc, setPdfDoc] = useState(null); // Instancia parseada de pdfjsLib
+  const [numPages, setNumPages] = useState(null);
+  const [scale, setScale] = useState(1.5);
   const [activeView, setActiveView] = useState('document'); // 'document' | 'text' | 'metadata'
 
-  // Cargar datos del documento
+  // Cargar datos del documento de la DB
   useEffect(() => {
     let currentUrl = null;
 
@@ -25,9 +70,20 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
           });
 
           if (row.archivo_blob) {
-            const blob = new Blob([row.archivo_blob], { type: row.archivo_mime || 'application/octet-stream' });
-            currentUrl = URL.createObjectURL(blob);
-            setFileUrl(currentUrl);
+            if (row.archivo_mime === 'application/pdf') {
+              // Preparar arraybuffer y parsear PDF UNA SOLA VEZ
+              const data = new Uint8Array(row.archivo_blob);
+              pdfjsLib.getDocument({ data }).promise.then(pdf => {
+                setPdfDoc(pdf);
+                setNumPages(pdf.numPages);
+              }).catch(err => {
+                console.error("Error parsing PDF data", err);
+              });
+            } else {
+              const blob = new Blob([row.archivo_blob], { type: row.archivo_mime || 'application/octet-stream' });
+              currentUrl = URL.createObjectURL(blob);
+              setFileUrl(currentUrl);
+            }
           }
         }
         stmt.free();
@@ -37,10 +93,11 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
     }
 
     return () => {
-      // Limpiar el Blob URL de memoria al cerrar el modal o cambiar de documento
       if (currentUrl) {
         URL.revokeObjectURL(currentUrl);
       }
+      // Limpiar instancia de PDF si cerramos
+      setPdfDoc(null);
     };
   }, [documentId, db]);
 
@@ -95,18 +152,29 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-100/50">
+        <div className="flex-1 flex flex-col overflow-hidden bg-slate-100/50 relative">
 
           {activeView === 'document' && (
-            <div className="flex-1 bg-slate-200 p-4 flex justify-center overflow-auto">
-              {fileUrl ? (
-                docData.mime === 'application/pdf' ? (
-                  <iframe src={`${fileUrl}#view=FitH`} className="w-full h-full rounded shadow-sm bg-white" title="PDF Viewer" />
-                ) : (
+            <div className="flex-1 bg-slate-200 overflow-auto relative">
+              {pdfDoc ? (
+                <div className="flex flex-col items-center py-8">
+                  <div className="sticky top-4 z-10 flex gap-2 mb-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-slate-200">
+                    <button onClick={() => setScale(s => Math.max(0.5, s - 0.25))} className="p-1 hover:bg-slate-200 rounded-full text-slate-600 transition-colors"><ZoomOut className="w-4 h-4" /></button>
+                    <span className="text-xs font-mono text-slate-500 font-medium flex items-center min-w-[3rem] justify-center">{Math.round(scale * 100)}%</span>
+                    <button onClick={() => setScale(s => Math.min(3, s + 0.25))} className="p-1 hover:bg-slate-200 rounded-full text-slate-600 transition-colors"><ZoomIn className="w-4 h-4" /></button>
+                  </div>
+                  <div className="w-full h-full flex flex-col items-center space-y-6">
+                    {Array.from(new Array(numPages || 1), (el, index) => (
+                       <PdfPage key={`page_${index + 1}`} pdfDoc={pdfDoc} pageNumber={index + 1} scale={scale} />
+                    ))}
+                  </div>
+                </div>
+              ) : fileUrl ? (
+                <div className="flex justify-center items-start h-full p-4">
                   <img src={fileUrl} alt="Document Original" className="max-w-full object-contain shadow-sm bg-white" />
-                )
+                </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-slate-500 italic">Documento original no disponible en base de datos.</div>
+                <div className="flex items-center justify-center h-full text-slate-500 italic p-4">Documento original no disponible en base de datos.</div>
               )}
             </div>
           )}
