@@ -60,8 +60,8 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
   try {
     const stmt = db.prepare(`
       INSERT INTO documentos
-      (nombre_archivo, hash_sha256, fecha_principal, categoria_sugerida, texto_raw, metadata_json)
-      VALUES (?, ?, ?, ?, ?, ?)
+      (nombre_archivo, hash_sha256, fecha_principal, categoria_sugerida, texto_raw, metadata_json, archivo_blob, archivo_mime)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run([
@@ -70,7 +70,9 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
       fechaSql, // Puede ser null
       clasificacion.categoria,
       ocrResult.textoPlano,
-      JSON.stringify(metadata)
+      JSON.stringify(metadata),
+      ocrResult.archivo_blob,
+      ocrResult.archivo_mime
     ]);
 
     stmt.free();

@@ -19,13 +19,19 @@ export const initDb = async () => {
     db = new SQL.Database(new Uint8Array(savedData));
 
     // Ensure table exists for older databases
-    db.run(`
-      CREATE TABLE IF NOT EXISTS memoria_human_in_the_loop (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        palabra_clave TEXT UNIQUE,
-        categoria_asignada TEXT
-      );
-    `);
+    try {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS memoria_human_in_the_loop (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          palabra_clave TEXT UNIQUE,
+          categoria_asignada TEXT
+        );
+        ALTER TABLE documentos ADD COLUMN archivo_blob BLOB;
+        ALTER TABLE documentos ADD COLUMN archivo_mime TEXT;
+      `);
+    } catch(e) {
+      // Ignorar si las columnas ya existen
+    }
   } else {
     db = new SQL.Database();
 
@@ -38,7 +44,9 @@ export const initDb = async () => {
         fecha_principal DATE,
         categoria_sugerida TEXT,
         texto_raw TEXT,
-        metadata_json TEXT
+        metadata_json TEXT,
+        archivo_blob BLOB,
+        archivo_mime TEXT
       );
 
       CREATE TABLE IF NOT EXISTS eventos_cronologia (

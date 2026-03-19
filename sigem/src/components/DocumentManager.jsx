@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getDb } from '../db';
 import { procesarYGuardarDocumento } from '../services/dbServices';
 import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File, Activity, FileText } from 'lucide-react';
+import DocumentViewerModal from './DocumentViewerModal';
 
 export default function DocumentManager({ onUpdateStats }) {
   const [documents, setDocuments] = useState([]);
@@ -9,6 +10,7 @@ export default function DocumentManager({ onUpdateStats }) {
   const [progress, setProgress] = useState({ step: '', value: 0 });
   const [searchTerm, setSearchTerm] = useState('');
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [selectedDocId, setSelectedDocId] = useState(null);
 
   const fetchDocuments = () => {
     try {
@@ -39,8 +41,8 @@ export default function DocumentManager({ onUpdateStats }) {
       try {
         await procesarYGuardarDocumento(file, (p) => {
           setProgress({
-            step: p.step === 'hashing' ? 'Calculando Integridad (SHA-256)' : 'Procesando Visión OCR (Tesseract)',
-            value: typeof p.progress === 'number' ? Math.round(p.progress * 100) : 100
+            step: p.step,
+            value: typeof p.progress === 'number' ? Math.round(p.progress) : 100
           });
         });
       } catch (err) {
@@ -56,14 +58,19 @@ export default function DocumentManager({ onUpdateStats }) {
   const handleCorrection = async (id, nuevaCategoria) => {
      try {
        const db = getDb();
-       db.exec(`UPDATE documentos SET categoria_sugerida = '${nuevaCategoria}' WHERE id = ${id}`);
+       // Use parameterized query to prevent SQL injection issues
+       db.run(`UPDATE documentos SET categoria_sugerida = ? WHERE id = ?`, [nuevaCategoria, id]);
 
        // Human-in-the-loop (HITL) Logic
        // En un sistema real, extraeríamos la entidad (ej. Médico o Clínica).
        // Aquí usamos el nombre del archivo sin extensión como "huella" o token para recordar.
-       const docRes = db.exec(`SELECT nombre_archivo FROM documentos WHERE id = ${id}`);
-       if (docRes.length > 0) {
-         let fileName = docRes[0].values[0][0];
+       const stmt = db.prepare(`SELECT nombre_archivo FROM documentos WHERE id = ?`);
+       stmt.bind([id]);
+       const stepRes = stmt.step();
+
+       if (stepRes) {
+         const docRes = stmt.getAsObject();
+         let fileName = docRes.nombre_archivo;
          // Simplificación: Guardamos una palabra clave del nombre para aplicar la regla en el futuro
          let baseName = fileName.split('.')[0].substring(0, 10).toLowerCase();
 
@@ -73,6 +80,7 @@ export default function DocumentManager({ onUpdateStats }) {
            await resdb.saveDb();
          }
        }
+       stmt.free();
 
        fetchDocuments();
      } catch (e) {
@@ -251,7 +259,10 @@ export default function DocumentManager({ onUpdateStats }) {
                   {doc.hash.substring(0, 12)}...
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 ml-auto">
+                  <button
+                    onClick={() => setSelectedDocId(doc.id)}
+                    className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 ml-auto"
+                  >
                     Ver Texto
                     <ChevronRight className="w-3 h-3" />
                   </button>
@@ -261,6 +272,15 @@ export default function DocumentManager({ onUpdateStats }) {
           </tbody>
         </table>
       </div>
+
+      {/* Document Viewer Modal */}
+      {selectedDocId && (
+        <DocumentViewerModal
+          documentId={selectedDocId}
+          db={getDb()}
+          onClose={() => setSelectedDocId(null)}
+        />
+      )}
     </div>
   );
 }

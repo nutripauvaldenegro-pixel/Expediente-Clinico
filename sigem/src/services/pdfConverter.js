@@ -6,38 +6,46 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
-export const convertirPdfAImagen = async (file, onProgress) => {
-  if (onProgress) onProgress({ step: 'pdf_conversion', progress: 0 });
+export const convertirPdfAImagenes = async (file, onProgress) => {
+  if (onProgress) onProgress({ step: 'Procesando PDF (Páginas)', progress: 0 });
 
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-  // Por ahora, procesamos la primera página para el expediente médico simple
-  // En un sistema avanzado se iterarían todas las páginas.
   const numPages = pdf.numPages;
-  const page = await pdf.getPage(1);
+  const blobs = [];
 
-  // Escala para mejorar la resolución para el OCR (2.0 = 200% zoom)
-  const scale = 2.0;
-  const viewport = page.getViewport({ scale });
+  // Procesar todas las páginas sin límite estricto, tal como lo requiere el expediente completo
+  const maxPages = numPages;
 
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await pdf.getPage(i);
 
-  const renderContext = {
-    canvasContext: context,
-    viewport: viewport
-  };
+    // Escala para mejorar la resolución para el OCR (2.0 = 200% zoom)
+    const scale = 2.0;
+    const viewport = page.getViewport({ scale });
 
-  await page.render(renderContext).promise;
-  if (onProgress) onProgress({ step: 'pdf_conversion', progress: 100 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
 
-  // Convertir canvas a Blob para pasarlo a Tesseract
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob);
-    }, 'image/png');
-  });
+    const renderContext = {
+      canvasContext: context,
+      viewport: viewport
+    };
+
+    await page.render(renderContext).promise;
+
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob((b) => resolve(b), 'image/png');
+    });
+
+    blobs.push(blob);
+
+    if (onProgress) {
+      onProgress({ step: `Convirtiendo PDF Pág. ${i} de ${maxPages}`, progress: (i / maxPages) * 100 });
+    }
+  }
+
+  return blobs;
 };
