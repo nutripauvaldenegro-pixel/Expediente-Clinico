@@ -101,6 +101,27 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
   }
 };
 
+// --- Módulo Gestión ---
+
+export const eliminarDocumento = async (id) => {
+  const db = getDb();
+  try {
+    db.run('BEGIN TRANSACTION');
+    // Eliminar eventos cronológicos asociados por la llave foránea
+    db.run('DELETE FROM eventos_cronologia WHERE documento_id = ?', [id]);
+    // Eliminar el documento
+    db.run('DELETE FROM documentos WHERE id = ?', [id]);
+    db.run('COMMIT');
+
+    await saveDb();
+    return true;
+  } catch (error) {
+    db.run('ROLLBACK');
+    console.error("Error al eliminar el documento:", error);
+    throw error;
+  }
+};
+
 // --- Módulo Analítico ---
 
 export const buscarInconsistencias = (termino) => {

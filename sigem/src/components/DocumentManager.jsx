@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDb } from '../db';
-import { procesarYGuardarDocumento } from '../services/dbServices';
-import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File, Activity, FileText } from 'lucide-react';
+import { procesarYGuardarDocumento, eliminarDocumento } from '../services/dbServices';
+import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File, Activity, FileText, Trash2 } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
 export default function DocumentManager({ onUpdateStats }) {
@@ -86,6 +86,18 @@ export default function DocumentManager({ onUpdateStats }) {
      } catch (e) {
        console.error("Error corrigiendo categoría:", e);
      }
+  };
+
+  const handleDelete = async (id, nombre) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar permanentemente el documento "${nombre}"? Esta acción borrará el archivo original y los datos OCR indexados de la base de datos local.`)) {
+      try {
+        await eliminarDocumento(id);
+        fetchDocuments();
+        onUpdateStats();
+      } catch (err) {
+        alert(`No se pudo eliminar el documento: ${err.message}`);
+      }
+    }
   };
 
   const filteredDocs = documents.filter(doc => {
@@ -259,13 +271,22 @@ export default function DocumentManager({ onUpdateStats }) {
                   {doc.hash.substring(0, 12)}...
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={() => setSelectedDocId(doc.id)}
-                    className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 ml-auto"
-                  >
-                    Ver Texto
-                    <ChevronRight className="w-3 h-3" />
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => handleDelete(doc.id, doc.name)}
+                      className="text-rose-500 hover:text-rose-700 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 p-1.5 rounded-md transition-colors"
+                      title="Eliminar documento"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedDocId(doc.id)}
+                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1"
+                    >
+                      Ver Documento
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
