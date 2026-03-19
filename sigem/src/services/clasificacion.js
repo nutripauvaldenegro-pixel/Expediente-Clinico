@@ -1,35 +1,62 @@
 export const REGLAS_CLASIFICACION = {
-  "Cardiologia": [
-    { token: "electrocardiograma", peso: 5 },
-    { token: "ritmo sinusal", peso: 5 },
-    { token: "arritmia", peso: 4 },
-    { token: "ecocardiograma", peso: 4 },
-    { token: "mg/dl", peso: -2 }
+  "Atencion Medica": [
+    { token: "anamnesis", peso: 4 },
+    { token: "motivo de consulta", peso: 5 },
+    { token: "examen fisico", peso: 4 },
+    { token: "diagnostico", peso: 3 },
+    { token: "evolucion", peso: 4 }
   ],
-  "Laboratorio": [
-    { token: "mg/dl", peso: 3 },
-    { token: "hemograma", peso: 4 },
-    { token: "glucosa", peso: 3 },
-    { token: "colesterol", peso: 3 },
-    { token: "trigliceridos", peso: 3 }
+  "Reserva de Hora": [
+    { token: "reserva", peso: 5 },
+    { token: "cita", peso: 4 },
+    { token: "agendada", peso: 4 },
+    { token: "confirmacion de hora", peso: 5 },
+    { token: "hora medica", peso: 4 }
   ],
-  "Radiologia": [
-    { token: "radiografia", peso: 5 },
-    { token: "rayos x", peso: 5 },
-    { token: "resonancia", peso: 4 },
-    { token: "tomografia", peso: 4 },
-    { token: "fractura", peso: 3 }
+  "Resultado de Examen": [
+    { token: "resultado", peso: 4 },
+    { token: "valores de referencia", peso: 5 },
+    { token: "rango normal", peso: 4 },
+    { token: "conclusiones", peso: 3 },
+    { token: "hallazgos", peso: 3 }
   ],
-  "Receta Medica": [
-    { token: "rx", peso: 3 },
+  "Orden de Examen": [
+    { token: "orden medica", peso: 5 },
+    { token: "solicita examen", peso: 5 },
+    { token: "deriva a", peso: 4 },
+    { token: "ruego evaluar", peso: 3 },
+    { token: "interconsulta", peso: 4 }
+  ],
+  "Tratamiento": [
+    { token: "plan de tratamiento", peso: 5 },
+    { token: "indicaciones", peso: 4 },
+    { token: "terapia", peso: 4 },
+    { token: "kinesiologia", peso: 3 },
+    { token: "sesiones", peso: 3 }
+  ],
+  "Informe": [
+    { token: "informe medico", peso: 5 },
+    { token: "epicrisis", peso: 5 },
+    { token: "resumen clinico", peso: 5 },
+    { token: "alta medica", peso: 4 }
+  ],
+  "Certificado": [
+    { token: "certificado", peso: 5 },
+    { token: "certifica", peso: 4 },
+    { token: "reposo medico", peso: 5 },
+    { token: "licencia", peso: 4 },
+    { token: "para ser presentado", peso: 4 }
+  ],
+  "Receta": [
+    { token: "receta", peso: 5 },
+    { token: "rp", peso: 4 },
     { token: "tomar", peso: 2 },
     { token: "cada 8 horas", peso: 3 },
-    { token: "mg", peso: 1 },
     { token: "comprimidos", peso: 3 }
   ]
 };
 
-const UMBRAL_CLASIFICACION = 10;
+const UMBRAL_CLASIFICACION = 8;
 
 export const clasificarDocumento = (textoNormalizado) => {
   const puntuaciones = {};

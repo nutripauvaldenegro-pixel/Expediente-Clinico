@@ -113,18 +113,22 @@ export default function DocumentManager({ onUpdateStats }) {
     const isPending = category === 'Desconocido/Pendiente';
     const colorClass = isPending
       ? 'bg-amber-100 text-amber-800 border-amber-200'
-      : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      : 'bg-indigo-100 text-indigo-800 border-indigo-200';
 
     return (
       <select
         value={category}
         onChange={(e) => handleCorrection(docId, e.target.value)}
-        className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClass} focus:ring-2 focus:ring-indigo-500 outline-none transition-colors cursor-pointer hover:shadow-sm`}
+        className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClass} focus:ring-2 focus:ring-indigo-500 outline-none transition-colors cursor-pointer hover:shadow-sm max-w-[160px] truncate`}
       >
-        <option value="Cardiologia">Cardiología</option>
-        <option value="Laboratorio">Laboratorio</option>
-        <option value="Radiologia">Radiología</option>
-        <option value="Receta Medica">Receta Médica</option>
+        <option value="Atencion Medica">Atención Médica</option>
+        <option value="Reserva de Hora">Reserva de Hora</option>
+        <option value="Resultado de Examen">Resultado de Examen</option>
+        <option value="Orden de Examen">Orden de Examen</option>
+        <option value="Tratamiento">Tratamiento</option>
+        <option value="Informe">Informe Médico</option>
+        <option value="Certificado">Certificado</option>
+        <option value="Receta">Receta Médica</option>
         <option value="Desconocido/Pendiente">⚠ Pendiente Revisión</option>
       </select>
     );
@@ -226,7 +230,7 @@ export default function DocumentManager({ onUpdateStats }) {
             <tr>
               <th className="px-6 py-4">Documento</th>
               <th className="px-6 py-4 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Fecha Extraída</th>
-              <th className="px-6 py-4"><span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Etiqueta Heurística</span></th>
+              <th className="px-6 py-4"><span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Tipo de Documento</span></th>
               <th className="px-6 py-4">Integridad (Hash)</th>
               <th className="px-6 py-4 text-right">Acciones</th>
             </tr>

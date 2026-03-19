@@ -82,10 +82,12 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
     const lastInsertId = db.exec("SELECT last_insert_rowid()")[0].values[0][0];
 
     if (fechaSql) {
-      if (clasificacion.categoria === "Receta Medica") {
-        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Orden Médica Emitida', 3)`, [lastInsertId, fechaSql]);
-      } else if (clasificacion.categoria === "Laboratorio" || clasificacion.categoria === "Radiologia") {
-        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Resultado Reportado', 2)`, [lastInsertId, fechaSql]);
+      if (clasificacion.categoria === "Orden de Examen" || clasificacion.categoria === "Receta") {
+        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Orden Emitida', 3)`, [lastInsertId, fechaSql]);
+      } else if (clasificacion.categoria === "Resultado de Examen" || clasificacion.categoria === "Informe") {
+        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Resultado / Informe Generado', 2)`, [lastInsertId, fechaSql]);
+      } else if (clasificacion.categoria === "Atencion Medica") {
+        db.run(`INSERT INTO eventos_cronologia (documento_id, fecha_evento, descripcion_hito, gravedad) VALUES (?, ?, 'Consulta Médica', 1)`, [lastInsertId, fechaSql]);
       }
     }
 
