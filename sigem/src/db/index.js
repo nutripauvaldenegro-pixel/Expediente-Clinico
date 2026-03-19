@@ -26,12 +26,16 @@ export const initDb = async () => {
           palabra_clave TEXT UNIQUE,
           categoria_asignada TEXT
         );
-        ALTER TABLE documentos ADD COLUMN archivo_blob BLOB;
-        ALTER TABLE documentos ADD COLUMN archivo_mime TEXT;
       `);
-    } catch(e) {
-      // Ignorar si las columnas ya existen
-    }
+    } catch(e) {}
+
+    try {
+      db.run(`ALTER TABLE documentos ADD COLUMN archivo_blob BLOB;`);
+    } catch(e) {}
+
+    try {
+      db.run(`ALTER TABLE documentos ADD COLUMN archivo_mime TEXT;`);
+    } catch(e) {}
   } else {
     db = new SQL.Database();
 

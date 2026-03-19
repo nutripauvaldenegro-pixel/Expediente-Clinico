@@ -23,12 +23,8 @@ export const procesarDocumento = async (file, onProgress) => {
        );
     }
 
-    // 3. Extraer OCR, texto normalizado, coordenadas y confianza por cada página
-    let textoPlanoConsolidado = "";
-    let textoNormalizadoConsolidado = "";
-    let coordenadasConsolidadas = [];
-    let confianzas = [];
-    let ocrDataRawConsolidado = [];
+    // 3. Extraer OCR, texto normalizado, coordenadas y confianza por cada página de forma granular
+    const paginas = [];
 
     for (let i = 0; i < filesToOcr.length; i++) {
       if (onProgress) onProgress({ step: `Visión OCR (Pág. ${i+1}/${filesToOcr.length})`, progress: 0 });
@@ -37,18 +33,21 @@ export const procesarDocumento = async (file, onProgress) => {
         if (onProgress) onProgress({ step: `Visión OCR (Pág. ${i+1}/${filesToOcr.length})`, progress: p * 100 });
       });
 
-      textoPlanoConsolidado += ocrData.textoPlano + "\n\n--- FIN PÁGINA " + (i+1) + " ---\n\n";
-      textoNormalizadoConsolidado += ocrData.textoNormalizado + "\n";
-      // Ajustar la Y virtualmente si quisieramos concatenar páginas, aquí simplemente las guardamos con un offset "falso" o etiqueta
-      coordenadasConsolidadas = coordenadasConsolidadas.concat(
-         ocrData.coordenadas.map(c => ({...c, page: i+1}))
-      );
-      confianzas.push(ocrData.confidence);
-      ocrDataRawConsolidado.push(JSON.parse(ocrData.ocrDataRaw));
+      // Guardamos la información específica de cada página
+      paginas.push({
+        pageNumber: i + 1,
+        textoPlano: ocrData.textoPlano,
+        textoNormalizado: ocrData.textoNormalizado,
+        coordenadas: ocrData.coordenadas, // Ya sin offset "falso", coordenadas puras relativas a su página
+        confidence: ocrData.confidence,
+        ocrDataRaw: JSON.parse(ocrData.ocrDataRaw)
+      });
     }
 
-    // Calcular confianza promedio
-    const avgConfidence = confianzas.length > 0 ? (confianzas.reduce((a,b)=>a+b, 0) / confianzas.length) : 0;
+    // Calcular confianza promedio del documento global
+    const avgConfidence = paginas.length > 0
+      ? (paginas.reduce((acc, p) => acc + p.confidence, 0) / paginas.length)
+      : 0;
 
     // Convertir el archivo original a Uint8Array para guardarlo como BLOB en SQLite
     const originalFileBuffer = await file.arrayBuffer();
@@ -57,11 +56,10 @@ export const procesarDocumento = async (file, onProgress) => {
     return {
       nombre_archivo: file.name,
       hash_sha256: hashHex,
-      textoPlano: textoPlanoConsolidado,
-      textoNormalizado: textoNormalizadoConsolidado,
-      coordenadas: coordenadasConsolidadas,
+      // Retenemos el texto consolidado por completitud si es necesario para búsqueda rápida full-text
+      textoPlano: paginas.map(p => p.textoPlano).join('\n\n---\n\n'),
+      paginas_granulares: paginas, // Nueva estructura
       confidence: avgConfidence,
-      ocrDataRaw: JSON.stringify(ocrDataRawConsolidado),
       archivo_blob: originalFileUint8,
       archivo_mime: file.type
     };

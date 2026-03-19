@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { initDb, exportDb, importDb, getDb } from './db';
 import DocumentManager from './components/DocumentManager';
 import AnaliticaEvidencia from './components/AnaliticaEvidencia';
-import { Database, Download, Upload, Activity, FileText, ShieldCheck } from 'lucide-react';
+import CronologiaClinica from './components/CronologiaClinica';
+import { Database, Download, Upload, Activity, FileText, ShieldCheck, ListOrdered } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -85,6 +86,17 @@ function App() {
               Gestión de Expedientes
             </button>
             <button
+              onClick={() => setActiveTab('timeline')}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium whitespace-nowrap ${
+                activeTab === 'timeline'
+                ? 'bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <ListOrdered className="w-5 h-5" />
+              Cronología Clínica
+            </button>
+            <button
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium whitespace-nowrap ${
                 activeTab === 'analytics'
@@ -134,10 +146,11 @@ function App() {
         </aside>
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
           {dbReady ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1 flex flex-col h-[calc(100vh-8rem)]">
               {activeTab === 'documents' && <DocumentManager onUpdateStats={updateStats} />}
+              {activeTab === 'timeline' && <CronologiaClinica />}
               {activeTab === 'analytics' && <AnaliticaEvidencia />}
             </div>
           ) : (

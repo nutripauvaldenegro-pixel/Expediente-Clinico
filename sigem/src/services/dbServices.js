@@ -2,6 +2,7 @@ import { getDb, saveDb } from '../db';
 import { procesarDocumento } from './ingesta';
 import { clasificarDocumento } from './clasificacion';
 import { extraerFechaPrincipal } from './extraccion';
+import { extraerEntidadesClinicas } from './diccionarioClinico';
 
 export const procesarYGuardarDocumento = async (file, onProgress) => {
   const db = getDb();
@@ -48,12 +49,27 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
     }
   }
 
-  // 4. Construir metadata JSON
+  // 4. Construir metadata JSON mejorado con entidades extraídas página por página
+  const paginasConEntidades = ocrResult.paginas_granulares.map(pagina => {
+    // Clasificación independiente para cada página (opcional/útil para la cronología)
+    const clasePaginada = clasificarDocumento(pagina.textoNormalizado);
+    const fechaPaginada = extraerFechaPrincipal(pagina.textoPlano, pagina.coordenadas);
+    const entidades = extraerEntidadesClinicas(pagina.textoNormalizado);
+
+    return {
+      ...pagina,
+      categoria: clasePaginada.categoria,
+      fecha: fechaPaginada,
+      entidades: entidades
+    };
+  });
+
   const metadata = {
     puntuaciones_heuristica: clasificacion.puntuaciones,
     es_ambiguo: clasificacion.esAmbigua,
     ocr_confidence: ocrResult.confidence,
-    coordenadas_json: ocrResult.ocrDataRaw
+    // Eliminamos coordenadas_json global para no redundar, ahora está dentro de paginas_granulares
+    paginas_granulares: paginasConEntidades
   };
 
   // 5. Persistencia

@@ -2,7 +2,8 @@ import fastLevenshtein from 'fast-levenshtein';
 
 // Busca un patrón de fecha alrededor de una palabra clave (ej. "fecha")
 export const extraerFechaPrincipal = (textoPlano, coordenadas) => {
-  const normalizado = textoPlano.toLowerCase();
+  const texto = textoPlano || "";
+  const normalizado = texto.toLowerCase();
   const indexFecha = normalizado.indexOf("fecha");
 
   if (indexFecha === -1) {

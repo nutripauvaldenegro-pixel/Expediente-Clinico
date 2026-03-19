@@ -71,7 +71,8 @@ export const clasificarDocumento = (textoNormalizado) => {
     for (const regla of reglas) {
       // Contar ocurrencias del token en el texto normalizado
       const regex = new RegExp(`\\b${regla.token.toLowerCase()}\\b`, 'g');
-      const coincidencias = (textoNormalizado.match(regex) || []).length;
+      const texto = textoNormalizado || "";
+      const coincidencias = (texto.match(regex) || []).length;
 
       if (coincidencias > 0) {
         puntuaciones[categoria] += (regla.peso * coincidencias);

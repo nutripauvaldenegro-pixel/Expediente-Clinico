@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, FileText, Fingerprint, Eye, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, FileText, Fingerprint, Eye, ZoomIn, ZoomOut, Calendar, Tag, Activity } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Componente externo para renderizar una página del PDF
@@ -50,6 +50,7 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
   const [numPages, setNumPages] = useState(null);
   const [scale, setScale] = useState(1.5);
   const [activeView, setActiveView] = useState('document'); // 'document' | 'text' | 'metadata'
+  const [activePageIdx, setActivePageIdx] = useState(0); // Para navegar metadata paginada
 
   // Cargar datos del documento de la DB
   useEffect(() => {
@@ -186,56 +187,111 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
           )}
 
           {activeView === 'metadata' && (
-            <div className="p-6 overflow-y-auto flex-1 space-y-6 max-w-2xl mx-auto w-full bg-white">
+            <div className="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6 max-w-5xl mx-auto w-full bg-white">
 
-              <div>
-                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Puntuación Heurística</h4>
-                <div className="space-y-2 border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  {Object.entries(docData.metadata?.puntuaciones_heuristica || {}).map(([cat, score]) => (
-                    <div key={cat} className="flex justify-between items-center text-sm border-b border-slate-100 last:border-0 pb-2 last:pb-0">
-                      <span className="text-slate-700">{cat}</span>
-                      <span className={`font-mono font-medium px-2 py-0.5 rounded ${score > 0 ? 'bg-emerald-100 text-emerald-700' : score < 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-200 text-slate-600'}`}>
-                        {score > 0 ? '+' : ''}{score}
-                      </span>
-                    </div>
+              {/* Selector de página para metadatos granulares */}
+              {docData.metadata?.paginas_granulares && docData.metadata.paginas_granulares.length > 1 && (
+                <div className="w-full md:w-64 shrink-0 space-y-2">
+                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Navegador de Páginas</h4>
+                  {docData.metadata.paginas_granulares.map((pag, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActivePageIdx(idx)}
+                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${activePageIdx === idx ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+                    >
+                      <div className="font-bold text-slate-800">Página {pag.pageNumber}</div>
+                      <div className="text-xs text-slate-500 mt-1 truncate">{pag.categoria}</div>
+                    </button>
                   ))}
                 </div>
-              </div>
+              )}
 
-              <div>
-                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Calidad de Visión (OCR)</h4>
-                <div className="flex items-center gap-3 border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${docData.metadata?.ocr_confidence > 80 ? 'bg-emerald-500' : docData.metadata?.ocr_confidence > 50 ? 'bg-amber-500' : 'bg-rose-500'}`}
-                      style={{ width: `${docData.metadata?.ocr_confidence || 0}%` }}
-                    ></div>
+              {/* Data del panel central */}
+              {docData.metadata?.paginas_granulares && docData.metadata.paginas_granulares[activePageIdx] ? (() => {
+                const pag = docData.metadata.paginas_granulares[activePageIdx];
+                return (
+                  <div className="flex-1 space-y-6">
+                    <div className="flex justify-between items-end border-b border-slate-200 pb-4">
+                      <div>
+                        <h2 className="text-2xl font-bold text-slate-900">{pag.categoria}</h2>
+                        <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
+                          <Calendar className="w-4 h-4" /> {pag.fecha || 'Fecha desconocida'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Confianza OCR</div>
+                        <div className={`text-lg font-bold font-mono ${pag.confidence > 80 ? 'text-emerald-600' : pag.confidence > 50 ? 'text-amber-600' : 'text-rose-600'}`}>
+                          {Math.round(pag.confidence)}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Tag className="w-4 h-4" /> Entidades Clínicas Detectadas
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+
+                        {/* Síntomas y Diagnósticos */}
+                        <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-4">
+                          <h5 className="text-xs font-bold text-rose-800 uppercase tracking-wider mb-3">Síntomas / Diagnósticos</h5>
+                          <div className="flex flex-wrap gap-2">
+                            {pag.entidades?.sintomas_y_diagnosticos?.length > 0 ? (
+                              pag.entidades.sintomas_y_diagnosticos.map((ent, i) => (
+                                <span key={i} className="bg-white border border-rose-200 text-rose-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                              ))
+                            ) : <span className="text-xs text-rose-400 italic">No se detectaron.</span>}
+                          </div>
+                        </div>
+
+                        {/* Tratamientos y Medicamentos */}
+                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4">
+                          <h5 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">Tratamiento / Farmacología</h5>
+                          <div className="flex flex-wrap gap-2">
+                            {pag.entidades?.medicamentos_y_tratamientos?.length > 0 ? (
+                              pag.entidades.medicamentos_y_tratamientos.map((ent, i) => (
+                                <span key={i} className="bg-white border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                              ))
+                            ) : <span className="text-xs text-emerald-400 italic">No se detectaron.</span>}
+                          </div>
+                        </div>
+
+                        {/* Procedimientos y Examenes */}
+                        <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 md:col-span-2">
+                          <h5 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-3">Procedimientos / Exámenes</h5>
+                          <div className="flex flex-wrap gap-2">
+                            {pag.entidades?.procedimientos_y_examenes?.length > 0 ? (
+                              pag.entidades.procedimientos_y_examenes.map((ent, i) => (
+                                <span key={i} className="bg-white border border-blue-200 text-blue-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                              ))
+                            ) : <span className="text-xs text-blue-400 italic">No se detectaron.</span>}
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Activity className="w-4 h-4" /> Motor Heurístico (Score Global Original)
+                      </h4>
+                      <div className="space-y-2 border border-slate-200 rounded-lg p-4 bg-slate-50">
+                        {Object.entries(docData.metadata?.puntuaciones_heuristica || {}).map(([cat, score]) => (
+                          <div key={cat} className="flex justify-between items-center text-sm border-b border-slate-100 last:border-0 pb-2 last:pb-0">
+                            <span className="text-slate-700">{cat}</span>
+                            <span className={`font-mono font-medium px-2 py-0.5 rounded ${score > 0 ? 'bg-indigo-100 text-indigo-700' : score < 0 ? 'bg-slate-200 text-slate-500' : 'bg-white border text-slate-400'}`}>
+                              {score > 0 ? '+' : ''}{score}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                   </div>
-                  <span className="text-sm font-mono font-bold text-slate-700">{Math.round(docData.metadata?.ocr_confidence || 0)}%</span>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Palabras Indexadas</h4>
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-600 flex items-center justify-between shadow-sm">
-                  <span>Coordenadas espaciales guardadas:</span>
-                  <span className="font-bold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full border border-indigo-200">
-                    {(() => {
-                      try {
-                        const coords = JSON.parse(docData.metadata?.coordenadas_json || "[]");
-                        // Count all pages
-                        if (Array.isArray(coords) && coords.length > 0 && Array.isArray(coords[0])) {
-                           return coords.reduce((acc, curr) => acc + curr.length, 0);
-                        }
-                        return coords.length || 0;
-                      } catch(e) { return 0; }
-                    })()} palabras
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  Las coordenadas (x,y) de cada palabra se utilizan internamente para detectar encabezados, firmas y proximidad de fechas sin necesidad de marcadores visuales intrusivos.
-                </p>
-              </div>
+                );
+              })() : (
+                <div className="text-center p-12 text-slate-500 w-full">Metadatos estructurados antiguos. Elimine e indexe de nuevo el documento.</div>
+              )}
 
             </div>
           )}
