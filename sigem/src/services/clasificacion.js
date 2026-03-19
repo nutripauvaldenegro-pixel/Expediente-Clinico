@@ -58,6 +58,8 @@ export const REGLAS_CLASIFICACION = {
 
 const UMBRAL_CLASIFICACION = 8;
 
+import fastLevenshtein from 'fast-levenshtein';
+
 export const clasificarDocumento = (textoNormalizado) => {
   const puntuaciones = {};
 
@@ -66,13 +68,40 @@ export const clasificarDocumento = (textoNormalizado) => {
     puntuaciones[categoria] = 0;
   }
 
+  const texto = (textoNormalizado || "").toLowerCase().replace(/[.,;:()]/g, ' ');
+  const palabrasTexto = texto.split(/\s+/).filter(p => p.length > 0);
+
   // Evaluar reglas
   for (const [categoria, reglas] of Object.entries(REGLAS_CLASIFICACION)) {
     for (const regla of reglas) {
-      // Contar ocurrencias del token en el texto normalizado
-      const regex = new RegExp(`\\b${regla.token.toLowerCase()}\\b`, 'g');
-      const texto = textoNormalizado || "";
-      const coincidencias = (texto.match(regex) || []).length;
+      const terminoStr = regla.token.toLowerCase();
+      const palabrasTermino = terminoStr.split(/\s+/);
+      const numPalabrasTermino = palabrasTermino.length;
+
+      let coincidencias = 0;
+
+      // Buscar si el token (de una o varias palabras) está en el texto con tolerancia
+      for (let i = 0; i <= palabrasTexto.length - numPalabrasTermino; i++) {
+        let coincideCompleto = true;
+
+        for (let j = 0; j < numPalabrasTermino; j++) {
+          const palabraTexto = palabrasTexto[i + j];
+          const palabraDiccionario = palabrasTermino[j];
+
+          // Permitir 0 de distancia para palabras cortas (<= 3 letras), sino max 2 de Levenshtein
+          const maxDistancia = palabraDiccionario.length <= 3 ? 0 : 2;
+          const distancia = fastLevenshtein.get(palabraTexto, palabraDiccionario);
+
+          if (distancia > maxDistancia) {
+            coincideCompleto = false;
+            break;
+          }
+        }
+
+        if (coincideCompleto) {
+          coincidencias++;
+        }
+      }
 
       if (coincidencias > 0) {
         puntuaciones[categoria] += (regla.peso * coincidencias);

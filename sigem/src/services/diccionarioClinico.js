@@ -23,6 +23,8 @@ export const DICCIONARIO_CLINICO = {
   ]
 };
 
+import fastLevenshtein from 'fast-levenshtein';
+
 export const extraerEntidadesClinicas = (textoNormalizado) => {
   const entidadesEncontradas = {
     sintomas_y_diagnosticos: [],
@@ -30,14 +32,42 @@ export const extraerEntidadesClinicas = (textoNormalizado) => {
     procedimientos_y_examenes: []
   };
 
-  const texto = textoNormalizado || "";
+  const texto = (textoNormalizado || "").toLowerCase().replace(/[.,;:()]/g, ' ');
+  const palabrasTexto = texto.split(/\s+/).filter(p => p.length > 0);
 
-  // Buscar coincidencias de cada diccionario en el texto de la página
   Object.keys(DICCIONARIO_CLINICO).forEach((categoria) => {
     DICCIONARIO_CLINICO[categoria].forEach((termino) => {
-      // Búsqueda exacta del término (word boundaries para evitar falsos positivos como "tos" en "tosco")
-      const regex = new RegExp(`\\b${termino}\\b`, 'gi');
-      if (regex.test(texto)) {
+      const terminoStr = termino.toLowerCase();
+      const palabrasTermino = terminoStr.split(/\s+/);
+      const numPalabrasTermino = palabrasTermino.length;
+
+      let encontrado = false;
+
+      // Buscar si el término (de una o varias palabras) está en el texto con tolerancia
+      for (let i = 0; i <= palabrasTexto.length - numPalabrasTermino; i++) {
+        let coincideCompleto = true;
+
+        for (let j = 0; j < numPalabrasTermino; j++) {
+          const palabraTexto = palabrasTexto[i + j];
+          const palabraDiccionario = palabrasTermino[j];
+
+          // Permitir 0 de distancia para palabras cortas (<= 3 letras), sino max 2 de Levenshtein
+          const maxDistancia = palabraDiccionario.length <= 3 ? 0 : 2;
+          const distancia = fastLevenshtein.get(palabraTexto, palabraDiccionario);
+
+          if (distancia > maxDistancia) {
+            coincideCompleto = false;
+            break;
+          }
+        }
+
+        if (coincideCompleto) {
+          encontrado = true;
+          break;
+        }
+      }
+
+      if (encontrado) {
         entidadesEncontradas[categoria].push(termino);
       }
     });
