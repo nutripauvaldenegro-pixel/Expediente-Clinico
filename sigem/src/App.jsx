@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { initDb, exportDb, importDb, getDb } from './db';
 import DocumentManager from './components/DocumentManager';
-import AnaliticaEvidencia from './components/AnaliticaEvidencia';
 import CronologiaClinica from './components/CronologiaClinica';
 import { Database, Download, Upload, Activity, FileText, ShieldCheck, ListOrdered } from 'lucide-react';
 import './index.css';
@@ -9,7 +8,7 @@ import './index.css';
 function App() {
   const [dbReady, setDbReady] = useState(false);
   const [docsCount, setDocsCount] = useState(0);
-  const [activeTab, setActiveTab] = useState('documents'); // 'documents' | 'analytics'
+  const [activeTab, setActiveTab] = useState('documents'); // 'documents' | 'timeline'
 
   useEffect(() => {
     initDb().then(() => {
@@ -96,17 +95,6 @@ function App() {
               <ListOrdered className="w-5 h-5" />
               Cronología Clínica
             </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium whitespace-nowrap ${
-                activeTab === 'analytics'
-                ? 'bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              <Activity className="w-5 h-5" />
-              Auditoría y Evidencia
-            </button>
           </nav>
 
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
@@ -151,7 +139,6 @@ function App() {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1 flex flex-col h-[calc(100vh-8rem)]">
               {activeTab === 'documents' && <DocumentManager onUpdateStats={updateStats} />}
               {activeTab === 'timeline' && <CronologiaClinica />}
-              {activeTab === 'analytics' && <AnaliticaEvidencia />}
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
