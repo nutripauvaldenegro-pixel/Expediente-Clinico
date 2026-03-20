@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { initDb, exportDb, importDb, getDb } from './db';
+import { initDb, getDb } from './db';
 import DocumentManager from './components/DocumentManager';
 import CronologiaClinica from './components/CronologiaClinica';
 import { Database, Download, Upload, Activity, FileText, ShieldCheck, ListOrdered } from 'lucide-react';
@@ -27,13 +27,6 @@ function App() {
     } catch (e) {
       console.error(e);
     }
-  };
-
-  const handleImport = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    await importDb(file);
-    updateStats();
   };
 
   return (
@@ -96,41 +89,6 @@ function App() {
               Cronología Clínica
             </button>
           </nav>
-
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Database className="w-4 h-4" />
-              Almacenamiento (SQLite)
-            </h3>
-
-            <div className="mb-6 flex items-baseline gap-2">
-              <span className="text-3xl font-light text-slate-800 tracking-tighter">{docsCount}</span>
-              <span className="text-sm font-medium text-slate-500">docs indexados</span>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={exportDb}
-                disabled={!dbReady}
-                className="w-full flex justify-center items-center gap-2 bg-white border border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-              >
-                <Download className="w-4 h-4" />
-                Respaldar Base (Export)
-              </button>
-
-              <label className={`w-full flex justify-center items-center gap-2 border border-slate-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm ${
-                  !dbReady ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : 'bg-white hover:border-slate-400 hover:bg-slate-50 text-slate-700 cursor-pointer'
-                }`}
-              >
-                <Upload className="w-4 h-4" />
-                Restaurar (Import)
-                <input type="file" accept=".sqlite,.db" className="hidden" onChange={handleImport} disabled={!dbReady} />
-              </label>
-            </div>
-            <p className="mt-4 text-[10px] text-slate-400 text-center leading-tight">
-              Los datos se guardan en el navegador. Haz respaldos periódicos.
-            </p>
-          </div>
         </aside>
 
         {/* Content Area */}
