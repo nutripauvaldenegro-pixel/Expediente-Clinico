@@ -4,41 +4,51 @@ export const REGLAS_CLASIFICACION = {
     { token: "motivo de consulta", peso: 5 },
     { token: "examen fisico", peso: 4 },
     { token: "diagnostico", peso: 3 },
-    { token: "evolucion", peso: 4 }
+    { token: "evolucion", peso: 4 },
+    { token: "sintomatologia", peso: 4 },
+    { token: "tratamiento", peso: 3 },
+    { token: "paciente", peso: 2 },
+    { token: "atencion medica", peso: 6 }
   ],
   "Reserva de Hora": [
     { token: "reserva", peso: 5 },
     { token: "cita", peso: 4 },
     { token: "agendada", peso: 4 },
     { token: "confirmacion de hora", peso: 5 },
-    { token: "hora medica", peso: 4 }
+    { token: "hora medica", peso: 4 },
+    { token: "fecha de atencion", peso: 4 }
   ],
   "Resultado de Examen": [
     { token: "resultado", peso: 4 },
     { token: "valores de referencia", peso: 5 },
     { token: "rango normal", peso: 4 },
     { token: "conclusiones", peso: 3 },
-    { token: "hallazgos", peso: 3 }
+    { token: "hallazgos", peso: 3 },
+    { token: "informe de laboratorio", peso: 5 },
+    { token: "parametros", peso: 3 }
   ],
   "Orden de Examen": [
     { token: "orden medica", peso: 5 },
     { token: "solicita examen", peso: 5 },
     { token: "deriva a", peso: 4 },
     { token: "ruego evaluar", peso: 3 },
-    { token: "interconsulta", peso: 4 }
+    { token: "interconsulta", peso: 4 },
+    { token: "procedimientos", peso: 3 }
   ],
   "Tratamiento": [
     { token: "plan de tratamiento", peso: 5 },
     { token: "indicaciones", peso: 4 },
     { token: "terapia", peso: 4 },
     { token: "kinesiologia", peso: 3 },
-    { token: "sesiones", peso: 3 }
+    { token: "sesiones", peso: 3 },
+    { token: "tratamiento farmacologico", peso: 5 }
   ],
   "Informe": [
     { token: "informe medico", peso: 5 },
     { token: "epicrisis", peso: 5 },
     { token: "resumen clinico", peso: 5 },
-    { token: "alta medica", peso: 4 }
+    { token: "alta medica", peso: 4 },
+    { token: "historia clinica", peso: 4 }
   ],
   "Certificado": [
     { token: "certificado", peso: 5 },
@@ -52,11 +62,12 @@ export const REGLAS_CLASIFICACION = {
     { token: "rp", peso: 4 },
     { token: "tomar", peso: 2 },
     { token: "cada 8 horas", peso: 3 },
-    { token: "comprimidos", peso: 3 }
+    { token: "comprimidos", peso: 3 },
+    { token: "farmacia", peso: 3 }
   ]
 };
 
-const UMBRAL_CLASIFICACION = 8;
+const UMBRAL_CLASIFICACION = 6;
 
 import fastLevenshtein from 'fast-levenshtein';
 

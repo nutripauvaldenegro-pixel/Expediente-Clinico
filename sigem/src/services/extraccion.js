@@ -37,8 +37,8 @@ const esFechaValida = (fechaStr) => {
   if (day < 1 || day > 31) return false;
 
   const currentYear = new Date().getFullYear();
-  // Se asume válido si el año es >= 1900 y <= Año Actual
-  if (year < 1900 || year > currentYear) return false;
+  // Se asume válido si el año es >= 2000 (para evitar confundir con fecha de nacimiento) y <= Año Actual
+  if (year < 2000 || year > currentYear) return false;
 
   return true;
 };

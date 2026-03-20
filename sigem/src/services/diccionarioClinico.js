@@ -4,7 +4,10 @@ export const DICCIONARIO_CLINICO = {
     "asma", "dolor abdominal", "disnea", "nauseas", "vomitos", "diarrea",
     "mareos", "vertigo", "fatiga", "ansiedad", "depresion", "obesidad",
     "dislipidemia", "arritmia", "taquicardia", "bradicardia", "hipotiroidismo",
-    "hipertiroidismo", "artritis", "artrosis", "lumbalgia", "cervicalgia", "alergia"
+    "hipertiroidismo", "artritis", "artrosis", "lumbalgia", "cervicalgia", "alergia",
+    "insomnio", "anemia", "gastritis", "infeccion", "sindrome", "traumatismo",
+    "fractura", "esguince", "inflamacion", "edema", "hemorragia", "convulsiones",
+    "sintomatologia", "motivo de consulta"
   ],
   medicamentos_y_tratamientos: [
     "paracetamol", "ibuprofeno", "amoxicilina", "azitromicina", "losartan",
@@ -12,14 +15,18 @@ export const DICCIONARIO_CLINICO = {
     "atorvastatina", "simvastatina", "aspirina", "diclofenaco", "naproxeno",
     "ketorolaco", "tramadol", "clonazepam", "diazepam", "alprazolam",
     "lorazepam", "fluoxetina", "sertralina", "escitalopram", "salbutamol",
-    "budesonida", "prednisona", "hidrocortisona", "dexametasona", "ibuprofeno"
+    "budesonida", "prednisona", "hidrocortisona", "dexametasona", "ibuprofeno",
+    "antibiotico", "analgesico", "antiinflamatorio", "antidepresivo", "antihipertensivo",
+    "corticoides", "jarabe", "comprimidos", "capsulas", "inyeccion", "suero",
+    "tratamiento farmacologico"
   ],
   procedimientos_y_examenes: [
     "ecografia", "tomografia", "tac", "resonancia magnetica", "rmn", "radiografia",
     "rayos x", "electrocardiograma", "ecocardiograma", "endoscopia", "colonoscopia",
     "hemograma", "perfil lipidico", "glicemia", "creatinina", "urea", "acido urico",
     "orina completa", "pcr", "test de antigeno", "biopsia", "cirugia", "sutura",
-    "kinesiologia", "fisioterapia", "psicoterapia"
+    "kinesiologia", "fisioterapia", "psicoterapia", "examen", "laboratorio",
+    "muestra", "cultivo", "urocultivo", "procedimiento"
   ]
 };
 
