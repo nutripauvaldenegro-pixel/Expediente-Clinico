@@ -11,6 +11,7 @@ export default function DocumentManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const fetchDocuments = () => {
     try {
@@ -32,8 +33,7 @@ export default function DocumentManager() {
     fetchDocuments();
   }, []);
 
-  const handleFileUpload = async (e) => {
-    const files = Array.from(e.target.files);
+  const processFiles = async (files) => {
     if (!files.length) return;
 
     setUploading(true);
@@ -52,6 +52,28 @@ export default function DocumentManager() {
     setUploading(false);
     setProgress({ step: '', value: 0 });
     fetchDocuments();
+  };
+
+  const handleFileUpload = (e) => {
+    processFiles(Array.from(e.target.files));
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    if (!uploading) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (!uploading && e.dataTransfer.files) {
+      processFiles(Array.from(e.dataTransfer.files));
+    }
   };
 
   const handleCorrection = async (id, nuevaCategoria) => {
@@ -133,7 +155,22 @@ export default function DocumentManager() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900">
+    <div
+      className="flex flex-col h-full bg-slate-900 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 z-50 pointer-events-none bg-indigo-900/90 backdrop-blur-sm border-4 border-dashed border-indigo-400 rounded-2xl flex flex-col items-center justify-center animate-in fade-in duration-200">
+          <div className="bg-indigo-800/50 p-6 rounded-full mb-4 shadow-xl shadow-indigo-900/50">
+             <FileUp className="w-16 h-16 text-indigo-300 animate-bounce" />
+          </div>
+          <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Suelta los archivos aquí</h2>
+          <p className="text-indigo-200 font-medium">Procesaremos los PDF o imágenes automáticamente.</p>
+        </div>
+      )}
+
       {/* Module Header */}
       <div className="p-6 border-b border-slate-800 bg-slate-950/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
