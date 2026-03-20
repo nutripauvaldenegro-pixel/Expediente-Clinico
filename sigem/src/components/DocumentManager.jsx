@@ -4,7 +4,7 @@ import { procesarYGuardarDocumento, eliminarDocumento } from '../services/dbServ
 import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File, Activity, FileText, Trash2 } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
-export default function DocumentManager({ onUpdateStats }) {
+export default function DocumentManager() {
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ step: '', value: 0 });
@@ -52,7 +52,6 @@ export default function DocumentManager({ onUpdateStats }) {
     setUploading(false);
     setProgress({ step: '', value: 0 });
     fetchDocuments();
-    onUpdateStats();
   };
 
   const handleCorrection = async (id, nuevaCategoria) => {
@@ -93,7 +92,6 @@ export default function DocumentManager({ onUpdateStats }) {
       try {
         await eliminarDocumento(id);
         fetchDocuments();
-        onUpdateStats();
       } catch (err) {
         alert(`No se pudo eliminar el documento: ${err.message}`);
       }
@@ -112,8 +110,8 @@ export default function DocumentManager({ onUpdateStats }) {
   const CategoryBadge = ({ category, docId }) => {
     const isPending = category === 'Desconocido/Pendiente';
     const colorClass = isPending
-      ? 'bg-amber-100 text-amber-800 border-amber-200'
-      : 'bg-indigo-100 text-indigo-800 border-indigo-200';
+      ? 'bg-amber-900/40 text-amber-300 border-amber-800'
+      : 'bg-indigo-900 text-indigo-200 border-indigo-800';
 
     return (
       <select
@@ -135,14 +133,14 @@ export default function DocumentManager({ onUpdateStats }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-slate-900">
       {/* Module Header */}
-      <div className="p-6 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="p-6 border-b border-slate-800 bg-slate-950/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-2">
             Expediente Digital
             {documents.length > 0 && (
-              <span className="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">{documents.length} archivos</span>
+              <span className="text-xs bg-slate-700 text-slate-500 px-2 py-0.5 rounded-full font-medium">{documents.length} archivos</span>
             )}
           </h2>
           <p className="text-sm text-slate-500 mt-1">Sube, visualiza y clasifica documentos médicos de forma segura y sin conexión.</p>
@@ -150,7 +148,7 @@ export default function DocumentManager({ onUpdateStats }) {
 
         <label className={`relative flex items-center gap-2 px-5 py-2.5 rounded-lg shadow-sm font-medium transition-all ${
             uploading
-            ? 'bg-indigo-100 text-indigo-700 cursor-wait'
+            ? 'bg-indigo-900 text-indigo-300 cursor-wait'
             : 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer hover:shadow-md active:scale-[0.98]'
           }`}
         >
@@ -164,12 +162,12 @@ export default function DocumentManager({ onUpdateStats }) {
 
           {/* Progress Popover */}
           {uploading && (
-            <div className="absolute top-14 right-0 bg-white border border-slate-200 p-4 rounded-xl shadow-xl w-72 text-sm text-slate-800 z-50 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute top-14 right-0 bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-xl w-72 text-sm text-slate-200 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-2 mb-2">
-                <div className="bg-indigo-100 p-1.5 rounded-md"><Activity className="w-4 h-4 text-indigo-600" /></div>
-                <p className="font-semibold text-slate-700 leading-none">{progress.step}</p>
+                <div className="bg-indigo-900 p-1.5 rounded-md"><Activity className="w-4 h-4 text-indigo-400" /></div>
+                <p className="font-semibold text-slate-600 leading-none">{progress.step}</p>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200 mt-3">
+              <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-800 mt-3">
                 <div
                   className="bg-indigo-500 h-full rounded-full transition-all duration-300 ease-out relative"
                   style={{ width: `${progress.value}%` }}
@@ -186,17 +184,17 @@ export default function DocumentManager({ onUpdateStats }) {
       </div>
 
       {/* Toolbar */}
-      <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
+      <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900">
         <div className="relative w-full sm:w-96">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-slate-400" />
+            <Search className="h-4 w-4 text-slate-500" />
           </div>
           <input
             type="text"
             placeholder="Buscar por nombre de archivo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-shadow shadow-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-slate-700 rounded-lg leading-5 bg-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-shadow shadow-sm"
           />
         </div>
         <div className="flex items-center gap-3">
@@ -204,29 +202,29 @@ export default function DocumentManager({ onUpdateStats }) {
             onClick={() => setShowPendingOnly(!showPendingOnly)}
             className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
               showPendingOnly
-                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-amber-900/40 text-amber-300 border border-amber-700'
+                : 'bg-slate-900 text-slate-500 border border-slate-800 hover:bg-slate-950'
             }`}
           >
-            <ShieldAlert className={`w-3.5 h-3.5 ${showPendingOnly ? 'text-amber-600' : 'text-slate-400'}`} />
+            <ShieldAlert className={`w-3.5 h-3.5 ${showPendingOnly ? 'text-amber-400' : 'text-slate-500'}`} />
             Pendientes de Revisión
             {pendingCount > 0 && (
-              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${showPendingOnly ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600'}`}>
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${showPendingOnly ? 'bg-amber-900/60 text-amber-200' : 'bg-slate-700 text-slate-500'}`}>
                 {pendingCount}
               </span>
             )}
           </button>
-          <div className="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-3 py-1.5 rounded-md">
-            <CheckCircle2 className="w-3.5 h-3.5 text-slate-400" />
+          <div className="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-800 px-3 py-1.5 rounded-md">
+            <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
             SHA-256 en {documents.length} docs
           </div>
         </div>
       </div>
 
       {/* Data Table */}
-      <div className="overflow-x-auto flex-1 bg-white relative">
-        <table className="min-w-full text-left text-sm text-slate-600 whitespace-nowrap">
-          <thead className="bg-slate-50/80 text-slate-500 uppercase tracking-wider text-[10px] font-bold sticky top-0 border-b border-slate-200 z-10 backdrop-blur-sm">
+      <div className="overflow-x-auto flex-1 bg-slate-900 relative">
+        <table className="min-w-full text-left text-sm text-slate-500 whitespace-nowrap">
+          <thead className="bg-slate-950/80 text-slate-500 uppercase tracking-wider text-[10px] font-bold sticky top-0 border-b border-slate-800 z-10 backdrop-blur-sm">
             <tr>
               <th className="px-6 py-4">Documento</th>
               <th className="px-6 py-4 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Fecha Extraída</th>
@@ -240,10 +238,10 @@ export default function DocumentManager({ onUpdateStats }) {
               <tr>
                 <td colSpan="5" className="px-6 py-20 text-center">
                   <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
-                    <div className="bg-slate-50 p-4 rounded-full mb-4">
-                      <File className="w-12 h-12 text-slate-300" />
+                    <div className="bg-slate-950 p-4 rounded-full mb-4">
+                      <File className="w-12 h-12 text-slate-600" />
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-1">Sin documentos indexados</h3>
+                    <h3 className="text-lg font-semibold text-slate-100 mb-1">Sin documentos indexados</h3>
                     <p className="text-sm text-slate-500 text-center">Inicia cargando imágenes o PDFs escaneados usando el botón superior. El sistema analizará y extraerá los datos automáticamente.</p>
                   </div>
                 </td>
@@ -253,24 +251,24 @@ export default function DocumentManager({ onUpdateStats }) {
                 <td colSpan="5" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron resultados para la búsqueda.</td>
               </tr>
             ) : filteredDocs.map(doc => (
-              <tr key={doc.id} className="hover:bg-indigo-50/30 transition-colors group">
+              <tr key={doc.id} className="hover:bg-indigo-900/40/30 transition-colors group">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="bg-slate-100 p-2 rounded text-slate-400 group-hover:text-indigo-500 group-hover:bg-indigo-100 transition-colors">
+                    <div className="bg-slate-800 p-2 rounded text-slate-500 group-hover:text-indigo-500 group-hover:bg-indigo-900 transition-colors">
                       <FileText className="w-4 h-4" />
                     </div>
-                    <span className="font-medium text-slate-900 truncate max-w-[200px]" title={doc.name}>{doc.name}</span>
+                    <span className="font-medium text-slate-100 truncate max-w-[200px]" title={doc.name}>{doc.name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`font-mono text-xs px-2 py-1 rounded ${doc.date ? 'bg-slate-100 text-slate-700' : 'text-slate-400 italic'}`}>
+                  <span className={`font-mono text-xs px-2 py-1 rounded ${doc.date ? 'bg-slate-800 text-slate-600' : 'text-slate-500 italic'}`}>
                     {doc.date || 'Sin fecha clara'}
                   </span>
                 </td>
                 <td className="px-6 py-4">
                   <CategoryBadge category={doc.category} docId={doc.id} />
                 </td>
-                <td className="px-6 py-4 font-mono text-[10px] text-slate-400 flex items-center gap-1.5" title={doc.hash}>
+                <td className="px-6 py-4 font-mono text-[10px] text-slate-500 flex items-center gap-1.5" title={doc.hash}>
                   <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                   {doc.hash.substring(0, 12)}...
                 </td>
@@ -278,14 +276,14 @@ export default function DocumentManager({ onUpdateStats }) {
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleDelete(doc.id, doc.name)}
-                      className="text-rose-500 hover:text-rose-700 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 p-1.5 rounded-md transition-colors"
+                      className="text-rose-400 hover:text-rose-400 bg-slate-900 hover:bg-rose-900/30 border border-slate-800 hover:border-rose-800 p-1.5 rounded-md transition-colors"
                       title="Eliminar documento"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setSelectedDocId(doc.id)}
-                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1"
+                      className="text-indigo-400 hover:text-indigo-100 bg-indigo-900/40 hover:bg-indigo-900 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1"
                     >
                       Ver Documento
                       <ChevronRight className="w-3 h-3" />

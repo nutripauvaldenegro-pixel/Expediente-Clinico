@@ -101,12 +101,12 @@ export default function CronologiaClinica() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 relative">
+    <div className="flex flex-col h-full bg-slate-950 relative">
       {/* Header & Filters */}
-      <div className="p-6 border-b border-slate-200 bg-white sticky top-0 z-20 shadow-sm flex flex-col gap-4">
+      <div className="p-6 border-b border-slate-800 bg-slate-900 sticky top-0 z-20 shadow-sm flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Activity className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-2">
+            <Activity className="w-5 h-5 text-indigo-400" />
             Ficha del Paciente (Cronología Clínica)
           </h2>
           <p className="text-sm text-slate-500 mt-1">Historial estructurado generado automáticamente a partir de todas las páginas de los documentos indexados.</p>
@@ -114,21 +114,21 @@ export default function CronologiaClinica() {
 
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
             <input
               type="text"
               placeholder="Buscar síntoma, medicamento, examen..."
               value={filtroTexto}
               onChange={e => setFiltroTexto(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow shadow-sm"
+              className="w-full pl-9 pr-4 py-2 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow shadow-sm"
             />
           </div>
 
-          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 overflow-x-auto shrink-0">
-            <button onClick={() => setFiltroTipo('todos')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'todos' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>Todos</button>
-            <button onClick={() => setFiltroTipo('sintomas')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'sintomas' ? 'bg-rose-100 text-rose-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Síntomas</button>
-            <button onClick={() => setFiltroTipo('medicamentos')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'medicamentos' ? 'bg-emerald-100 text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Tratamientos</button>
-            <button onClick={() => setFiltroTipo('procedimientos')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'procedimientos' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Exámenes</button>
+          <div className="flex bg-slate-800 p-1 rounded-lg border border-slate-800 overflow-x-auto shrink-0">
+            <button onClick={() => setFiltroTipo('todos')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'todos' ? 'bg-slate-900 shadow-sm text-slate-200' : 'text-slate-500 hover:text-slate-600'}`}>Todos</button>
+            <button onClick={() => setFiltroTipo('sintomas')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'sintomas' ? 'bg-rose-900/40 text-rose-400 shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}>Síntomas</button>
+            <button onClick={() => setFiltroTipo('medicamentos')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'medicamentos' ? 'bg-emerald-900/40 text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}>Tratamientos</button>
+            <button onClick={() => setFiltroTipo('procedimientos')} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors whitespace-nowrap ${filtroTipo === 'procedimientos' ? 'bg-blue-900/40 text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}>Exámenes</button>
           </div>
         </div>
       </div>
@@ -137,9 +137,9 @@ export default function CronologiaClinica() {
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-3xl mx-auto relative">
           {eventosFiltrados.length === 0 ? (
-            <div className="text-center py-20 text-slate-400">
-              <Filter className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-              <p className="text-lg font-medium text-slate-600">No hay eventos clínicos</p>
+            <div className="text-center py-20 text-slate-500">
+              <Filter className="w-12 h-12 mx-auto mb-4 text-slate-600" />
+              <p className="text-lg font-medium text-slate-500">No hay eventos clínicos</p>
               <p className="text-sm">Ajusta los filtros o asegúrate de haber indexado documentos que contengan fechas legibles.</p>
             </div>
           ) : (
@@ -157,26 +157,26 @@ export default function CronologiaClinica() {
                     </div>
 
                     {/* Timeline Card */}
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow group-hover:border-indigo-200">
+                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800 hover:shadow-md transition-shadow group-hover:border-indigo-800">
                       <div className="flex items-center justify-between mb-1">
-                        <time className="text-xs font-bold font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{evento.fecha}</time>
+                        <time className="text-xs font-bold font-mono text-slate-500 bg-slate-800 px-2 py-0.5 rounded">{evento.fecha}</time>
                         <span className={`text-[10px] uppercase tracking-wider font-bold text-${evento.colorCls}-600 bg-${evento.colorCls}-50 px-2 py-0.5 rounded-full`}>
                           {evento.categoriaPagina}
                         </span>
                       </div>
 
-                      <h4 className="text-lg font-bold text-slate-800 my-2 capitalize">{evento.entidad}</h4>
+                      <h4 className="text-lg font-bold text-slate-200 my-2 capitalize">{evento.entidad}</h4>
 
-                      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-slate-400 font-medium">Extraído de:</span>
-                          <span className="text-xs text-slate-600 truncate max-w-[150px] sm:max-w-[200px]" title={evento.nombreDoc}>
+                          <span className="text-[10px] text-slate-500 font-medium">Extraído de:</span>
+                          <span className="text-xs text-slate-500 truncate max-w-[150px] sm:max-w-[200px]" title={evento.nombreDoc}>
                             {evento.nombreDoc} (Pág. {evento.pageNumber})
                           </span>
                         </div>
                         <button
                           onClick={() => setSelectedDocId(evento.docId)}
-                          className="w-8 h-8 rounded-full bg-slate-50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-colors border border-slate-200 hover:border-indigo-200"
+                          className="w-8 h-8 rounded-full bg-slate-950 hover:bg-indigo-900/40 text-slate-500 hover:text-indigo-400 flex items-center justify-center transition-colors border border-slate-800 hover:border-indigo-800"
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>

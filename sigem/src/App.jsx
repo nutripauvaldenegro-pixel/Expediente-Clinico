@@ -7,54 +7,40 @@ import './index.css';
 
 function App() {
   const [dbReady, setDbReady] = useState(false);
-  const [docsCount, setDocsCount] = useState(0);
   const [activeTab, setActiveTab] = useState('documents'); // 'documents' | 'timeline'
 
   useEffect(() => {
     initDb().then(() => {
       setDbReady(true);
-      updateStats();
     }).catch(console.error);
   }, []);
 
-  const updateStats = () => {
-    try {
-      const db = getDb();
-      const res = db.exec("SELECT COUNT(*) as count FROM documentos");
-      if (res.length > 0) {
-        setDocsCount(res[0].values[0][0]);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
       {/* Header / Navbar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-indigo-600 p-2 rounded-lg shadow-inner">
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">SIGEM <span className="text-indigo-600 font-black">2.0</span></h1>
+              <h1 className="text-xl font-bold text-slate-100 tracking-tight">SIGEM <span className="text-indigo-400 font-black">2.0</span></h1>
               <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">Air-Gapped Medical Records</p>
             </div>
           </div>
 
           {/* Status Badge */}
-          <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+          <div className="hidden sm:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-800">
             {dbReady ? (
               <>
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span className="text-xs font-medium text-slate-700">Conexión Local Segura</span>
+                <span className="text-xs font-medium text-slate-600">Conexión Local Segura</span>
               </>
             ) : (
               <>
                 <Database className="w-4 h-4 text-amber-500 animate-pulse" />
-                <span className="text-xs font-medium text-slate-700">Inicializando motor...</span>
+                <span className="text-xs font-medium text-slate-600">Inicializando motor...</span>
               </>
             )}
           </div>
@@ -70,8 +56,8 @@ function App() {
               onClick={() => setActiveTab('documents')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium whitespace-nowrap ${
                 activeTab === 'documents'
-                ? 'bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                ? 'bg-indigo-900/40 text-indigo-300 shadow-sm border border-indigo-900'
+                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-100'
               }`}
             >
               <FileText className="w-5 h-5" />
@@ -81,8 +67,8 @@ function App() {
               onClick={() => setActiveTab('timeline')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium whitespace-nowrap ${
                 activeTab === 'timeline'
-                ? 'bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                ? 'bg-indigo-900/40 text-indigo-300 shadow-sm border border-indigo-900'
+                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-100'
               }`}
             >
               <ListOrdered className="w-5 h-5" />
@@ -94,14 +80,14 @@ function App() {
         {/* Content Area */}
         <div className="flex-1 min-w-0 flex flex-col">
           {dbReady ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1 flex flex-col h-[calc(100vh-8rem)]">
-              {activeTab === 'documents' && <DocumentManager onUpdateStats={updateStats} />}
+            <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-800 overflow-hidden flex-1 flex flex-col h-[calc(100vh-8rem)]">
+              {activeTab === 'documents' && <DocumentManager />}
               {activeTab === 'timeline' && <CronologiaClinica />}
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-              <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Iniciando Motor WebAssembly</h2>
+            <div className="h-full flex flex-col items-center justify-center bg-slate-900 rounded-2xl border border-slate-800 p-12 text-center shadow-sm">
+              <div className="w-16 h-16 border-4 border-indigo-800 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+              <h2 className="text-xl font-semibold text-slate-200 mb-2">Iniciando Motor WebAssembly</h2>
               <p className="text-slate-500 max-w-md">Cargando base de datos encriptada y modelos heurísticos. Por favor espera, esto ocurre localmente y no consume internet.</p>
             </div>
           )}

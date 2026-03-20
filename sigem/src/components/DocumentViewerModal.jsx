@@ -40,7 +40,7 @@ const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
     };
   }, [pdfDoc, pageNumber, scale]);
 
-  return <canvas ref={canvasRef} className="bg-white shadow-md mb-8 mx-auto block max-w-full rounded" />;
+  return <canvas ref={canvasRef} className="bg-slate-900 shadow-md mb-8 mx-auto block max-w-full rounded" />;
 };
 
 // Componente externo para renderizar una miniatura del PDF
@@ -81,7 +81,7 @@ const PdfThumbnail = ({ pdfDoc, pageNumber, scale = 0.3 }) => {
     };
   }, [pdfDoc, pageNumber, scale]);
 
-  return <canvas ref={canvasRef} className="bg-white shadow-sm rounded-sm object-contain w-12 h-auto" />;
+  return <canvas ref={canvasRef} className="bg-slate-900 shadow-sm rounded-sm object-contain w-12 h-auto" />;
 };
 
 export default function DocumentViewerModal({ documentId, db, onClose }) {
@@ -147,16 +147,16 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+      <div className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95">
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-100 p-2 rounded-lg">
-              <FileText className="w-5 h-5 text-indigo-600" />
+            <div className="bg-indigo-900 p-2 rounded-lg">
+              <FileText className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-lg leading-none">{docData.name}</h3>
+              <h3 className="font-bold text-slate-200 text-lg leading-none">{docData.name}</h3>
               <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-500 font-mono">
                 <Fingerprint className="w-3.5 h-3.5" />
                 {docData.hash}
@@ -165,45 +165,45 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+            className="p-2 hover:bg-slate-700 rounded-full text-slate-500 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Tabs */}
-        <div className="flex border-b border-slate-200 bg-slate-50 px-6">
+        <div className="flex border-b border-slate-800 bg-slate-950 px-6">
           <button
             onClick={() => setActiveView('document')}
-            className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'document' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'document' ? 'border-indigo-600 text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-200'}`}
           >
             Ver Documento Original
           </button>
           <button
             onClick={() => setActiveView('text')}
-            className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'text' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'text' ? 'border-indigo-600 text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-200'}`}
           >
             Texto Extraído (OCR)
           </button>
           <button
             onClick={() => setActiveView('metadata')}
-            className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'metadata' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'metadata' ? 'border-indigo-600 text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-200'}`}
           >
             Metadatos Analíticos
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-100/50 relative">
+        <div className="flex-1 flex flex-col overflow-hidden bg-slate-800/50 relative">
 
           {activeView === 'document' && (
-            <div className="flex-1 bg-slate-200 overflow-auto relative">
+            <div className="flex-1 bg-slate-700 overflow-auto relative">
               {pdfDoc ? (
                 <div className="flex flex-col items-center py-8">
-                  <div className="sticky top-4 z-10 flex gap-2 mb-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-slate-200">
-                    <button onClick={() => setScale(s => Math.max(0.5, s - 0.25))} className="p-1 hover:bg-slate-200 rounded-full text-slate-600 transition-colors"><ZoomOut className="w-4 h-4" /></button>
+                  <div className="sticky top-4 z-10 flex gap-2 mb-6 bg-slate-900/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-slate-800">
+                    <button onClick={() => setScale(s => Math.max(0.5, s - 0.25))} className="p-1 hover:bg-slate-700 rounded-full text-slate-500 transition-colors"><ZoomOut className="w-4 h-4" /></button>
                     <span className="text-xs font-mono text-slate-500 font-medium flex items-center min-w-[3rem] justify-center">{Math.round(scale * 100)}%</span>
-                    <button onClick={() => setScale(s => Math.min(3, s + 0.25))} className="p-1 hover:bg-slate-200 rounded-full text-slate-600 transition-colors"><ZoomIn className="w-4 h-4" /></button>
+                    <button onClick={() => setScale(s => Math.min(3, s + 0.25))} className="p-1 hover:bg-slate-700 rounded-full text-slate-500 transition-colors"><ZoomIn className="w-4 h-4" /></button>
                   </div>
                   <div className="w-full h-full flex flex-col items-center space-y-12">
                     {Array.from(new Array(numPages || 1), (el, index) => (
@@ -218,7 +218,7 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                 </div>
               ) : fileUrl ? (
                 <div className="flex justify-center items-start h-full p-4">
-                  <img src={fileUrl} alt="Document Original" className="max-w-full object-contain shadow-sm bg-white" />
+                  <img src={fileUrl} alt="Document Original" className="max-w-full object-contain shadow-sm bg-slate-900" />
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-500 italic p-4">Documento original no disponible en base de datos.</div>
@@ -227,13 +227,13 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
           )}
 
           {activeView === 'text' && (
-            <div className="p-6 overflow-y-auto flex-1 font-mono text-sm text-slate-700 leading-relaxed whitespace-pre-wrap selection:bg-indigo-100 selection:text-indigo-900 bg-white">
-              {docData.text || <span className="text-slate-400 italic">No se pudo extraer texto inteligible de este documento.</span>}
+            <div className="p-6 overflow-y-auto flex-1 font-mono text-sm text-slate-600 leading-relaxed whitespace-pre-wrap selection:bg-indigo-900 selection:text-indigo-100 bg-slate-900">
+              {docData.text || <span className="text-slate-500 italic">No se pudo extraer texto inteligible de este documento.</span>}
             </div>
           )}
 
           {activeView === 'metadata' && (
-            <div className="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6 max-w-5xl mx-auto w-full bg-white">
+            <div className="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6 max-w-5xl mx-auto w-full bg-slate-900">
 
               {/* Selector de página para metadatos granulares con miniatura */}
               {docData.metadata?.paginas_granulares && docData.metadata.paginas_granulares.length > 1 && (
@@ -243,25 +243,25 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                     <button
                       key={idx}
                       onClick={() => setActivePageIdx(idx)}
-                      className={`w-full text-left p-3 flex items-center gap-3 rounded-xl border text-sm transition-all ${activePageIdx === idx ? 'bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+                      className={`w-full text-left p-3 flex items-center gap-3 rounded-xl border text-sm transition-all ${activePageIdx === idx ? 'bg-indigo-900/40 border-indigo-800 shadow-sm ring-1 ring-indigo-200' : 'bg-slate-900 border-slate-800 hover:bg-slate-950'}`}
                     >
                       {/* Miniatura (si es PDF) o icono genérico */}
-                      <div className="w-12 h-16 bg-slate-200 rounded flex items-center justify-center overflow-hidden border border-slate-300 shrink-0 shadow-inner">
+                      <div className="w-12 h-16 bg-slate-700 rounded flex items-center justify-center overflow-hidden border border-slate-700 shrink-0 shadow-inner">
                         {pdfDoc ? (
                            <PdfThumbnail pdfDoc={pdfDoc} pageNumber={pag.pageNumber} />
                         ) : (
-                           <FileText className="w-5 h-5 text-slate-400" />
+                           <FileText className="w-5 h-5 text-slate-500" />
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className={`font-bold text-sm ${activePageIdx === idx ? 'text-indigo-900' : 'text-slate-800'}`}>
+                        <div className={`font-bold text-sm ${activePageIdx === idx ? 'text-indigo-100' : 'text-slate-200'}`}>
                           Página {pag.pageNumber}
                         </div>
                         <div className="text-[10px] text-slate-500 mt-0.5 truncate uppercase tracking-wider font-semibold">
                           {pag.categoria}
                         </div>
-                        <div className="text-xs text-slate-400 mt-0.5 font-mono truncate">
+                        <div className="text-xs text-slate-500 mt-0.5 font-mono truncate">
                           {pag.fecha || 'Sin fecha'}
                         </div>
                       </div>
@@ -275,16 +275,16 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                 const pag = docData.metadata.paginas_granulares[activePageIdx];
                 return (
                   <div className="flex-1 space-y-6">
-                    <div className="flex justify-between items-end border-b border-slate-200 pb-4">
+                    <div className="flex justify-between items-end border-b border-slate-800 pb-4">
                       <div>
-                        <h2 className="text-2xl font-bold text-slate-900">{pag.categoria}</h2>
+                        <h2 className="text-2xl font-bold text-slate-100">{pag.categoria}</h2>
                         <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
                           <Calendar className="w-4 h-4" /> {pag.fecha || 'Fecha desconocida'}
                         </p>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Confianza OCR</div>
-                        <div className={`text-lg font-bold font-mono ${pag.confidence > 80 ? 'text-emerald-600' : pag.confidence > 50 ? 'text-amber-600' : 'text-rose-600'}`}>
+                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Confianza OCR</div>
+                        <div className={`text-lg font-bold font-mono ${pag.confidence > 80 ? 'text-emerald-600' : pag.confidence > 50 ? 'text-amber-400' : 'text-rose-600'}`}>
                           {Math.round(pag.confidence)}%
                         </div>
                       </div>
@@ -297,12 +297,12 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                       <div className="grid gap-4 md:grid-cols-2">
 
                         {/* Síntomas y Diagnósticos */}
-                        <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-4">
-                          <h5 className="text-xs font-bold text-rose-800 uppercase tracking-wider mb-3">Síntomas / Diagnósticos</h5>
+                        <div className="bg-rose-900/30/50 border border-rose-100 rounded-xl p-4">
+                          <h5 className="text-xs font-bold text-rose-300 uppercase tracking-wider mb-3">Síntomas / Diagnósticos</h5>
                           <div className="flex flex-wrap gap-2">
                             {pag.entidades?.sintomas_y_diagnosticos?.length > 0 ? (
                               pag.entidades.sintomas_y_diagnosticos.map((ent, i) => (
-                                <span key={i} className="bg-white border border-rose-200 text-rose-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900 border border-rose-800 text-rose-400 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
                               ))
                             ) : <span className="text-xs text-rose-400 italic">No se detectaron.</span>}
                           </div>
@@ -310,11 +310,11 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
 
                         {/* Tratamientos y Medicamentos */}
                         <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4">
-                          <h5 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">Tratamiento / Farmacología</h5>
+                          <h5 className="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-3">Tratamiento / Farmacología</h5>
                           <div className="flex flex-wrap gap-2">
                             {pag.entidades?.medicamentos_y_tratamientos?.length > 0 ? (
                               pag.entidades.medicamentos_y_tratamientos.map((ent, i) => (
-                                <span key={i} className="bg-white border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
                               ))
                             ) : <span className="text-xs text-emerald-400 italic">No se detectaron.</span>}
                           </div>
@@ -326,7 +326,7 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                           <div className="flex flex-wrap gap-2">
                             {pag.entidades?.procedimientos_y_examenes?.length > 0 ? (
                               pag.entidades.procedimientos_y_examenes.map((ent, i) => (
-                                <span key={i} className="bg-white border border-blue-200 text-blue-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900 border border-blue-200 text-blue-400 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
                               ))
                             ) : <span className="text-xs text-blue-400 italic">No se detectaron.</span>}
                           </div>
@@ -339,11 +339,11 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                       <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Activity className="w-4 h-4" /> Motor Heurístico (Score Global Original)
                       </h4>
-                      <div className="space-y-2 border border-slate-200 rounded-lg p-4 bg-slate-50">
+                      <div className="space-y-2 border border-slate-800 rounded-lg p-4 bg-slate-950">
                         {Object.entries(docData.metadata?.puntuaciones_heuristica || {}).map(([cat, score]) => (
-                          <div key={cat} className="flex justify-between items-center text-sm border-b border-slate-100 last:border-0 pb-2 last:pb-0">
-                            <span className="text-slate-700">{cat}</span>
-                            <span className={`font-mono font-medium px-2 py-0.5 rounded ${score > 0 ? 'bg-indigo-100 text-indigo-700' : score < 0 ? 'bg-slate-200 text-slate-500' : 'bg-white border text-slate-400'}`}>
+                          <div key={cat} className="flex justify-between items-center text-sm border-b border-slate-800 last:border-0 pb-2 last:pb-0">
+                            <span className="text-slate-600">{cat}</span>
+                            <span className={`font-mono font-medium px-2 py-0.5 rounded ${score > 0 ? 'bg-indigo-900 text-indigo-300' : score < 0 ? 'bg-slate-700 text-slate-500' : 'bg-slate-900 border text-slate-500'}`}>
                               {score > 0 ? '+' : ''}{score}
                             </span>
                           </div>
