@@ -7,7 +7,9 @@ export const DICCIONARIO_CLINICO = {
     "hipertiroidismo", "artritis", "artrosis", "lumbalgia", "cervicalgia", "alergia",
     "insomnio", "anemia", "gastritis", "infeccion", "sindrome", "traumatismo",
     "fractura", "esguince", "inflamacion", "edema", "hemorragia", "convulsiones",
-    "sintomatologia", "motivo de consulta"
+    "sintomatologia", "motivo de consulta", "polineuropatia", "tejido conectivo",
+    "linforreticular", "enfermedad de base", "dolor", "dolor intenso", "mucosa",
+    "adenomegalia", "hipotesis diagnostica"
   ],
   medicamentos_y_tratamientos: [
     "paracetamol", "ibuprofeno", "amoxicilina", "azitromicina", "losartan",
@@ -18,7 +20,7 @@ export const DICCIONARIO_CLINICO = {
     "budesonida", "prednisona", "hidrocortisona", "dexametasona", "ibuprofeno",
     "antibiotico", "analgesico", "antiinflamatorio", "antidepresivo", "antihipertensivo",
     "corticoides", "jarabe", "comprimidos", "capsulas", "inyeccion", "suero",
-    "tratamiento farmacologico"
+    "tratamiento farmacologico", "viadil", "paracetamol", "ketoprofeno"
   ],
   procedimientos_y_examenes: [
     "ecografia", "tomografia", "tac", "resonancia magnetica", "rmn", "radiografia",
@@ -28,7 +30,7 @@ export const DICCIONARIO_CLINICO = {
     "kinesiologia", "fisioterapia", "psicoterapia", "examen", "laboratorio",
     "muestra", "cultivo", "urocultivo", "procedimiento", "signos vitales",
     "frecuencia cardiaca", "presion arterial", "temperatura", "saturacion",
-    "glicemia capilar"
+    "glicemia capilar", "exploracion", "examen fisico", "anamnesis"
   ]
 };
 
