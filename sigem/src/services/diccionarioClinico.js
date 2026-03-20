@@ -26,7 +26,9 @@ export const DICCIONARIO_CLINICO = {
     "hemograma", "perfil lipidico", "glicemia", "creatinina", "urea", "acido urico",
     "orina completa", "pcr", "test de antigeno", "biopsia", "cirugia", "sutura",
     "kinesiologia", "fisioterapia", "psicoterapia", "examen", "laboratorio",
-    "muestra", "cultivo", "urocultivo", "procedimiento"
+    "muestra", "cultivo", "urocultivo", "procedimiento", "signos vitales",
+    "frecuencia cardiaca", "presion arterial", "temperatura", "saturacion",
+    "glicemia capilar"
   ]
 };
 
@@ -39,7 +41,8 @@ export const extraerEntidadesClinicas = (textoNormalizado) => {
     procedimientos_y_examenes: []
   };
 
-  const texto = (textoNormalizado || "").toLowerCase().replace(/[.,;:()]/g, ' ');
+  // Normalizar para quitar acentos y limpiar caracteres especiales
+  const texto = (textoNormalizado || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.,;:()-\[\]]/g, ' ');
   const palabrasTexto = texto.split(/\s+/).filter(p => p.length > 0);
 
   Object.keys(DICCIONARIO_CLINICO).forEach((categoria) => {

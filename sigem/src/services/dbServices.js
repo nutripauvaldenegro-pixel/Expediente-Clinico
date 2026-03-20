@@ -1,7 +1,7 @@
 import { getDb, saveDb } from '../db';
 import { procesarDocumento } from './ingesta';
 import { clasificarDocumento } from './clasificacion';
-import { extraerFechaPrincipal } from './extraccion';
+import { extraerFechaPrincipal, extraerDemograficos } from './extraccion';
 import { extraerEntidadesClinicas } from './diccionarioClinico';
 
 export const procesarYGuardarDocumento = async (file, onProgress) => {
@@ -50,6 +50,8 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
   }
 
   // 4. Construir metadata JSON mejorado con entidades extraídas página por página
+  const demograficosGlobales = extraerDemograficos(ocrResult.textoPlano);
+
   const paginasConEntidades = ocrResult.paginas_granulares.map(pagina => {
     // Clasificación independiente para cada página (opcional/útil para la cronología)
     const clasePaginada = clasificarDocumento(pagina.textoNormalizado);
@@ -68,6 +70,7 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
     puntuaciones_heuristica: clasificacion.puntuaciones,
     es_ambiguo: clasificacion.esAmbigua,
     ocr_confidence: ocrResult.confidence,
+    demograficos: demograficosGlobales,
     // Eliminamos coordenadas_json global para no redundar, ahora está dentro de paginas_granulares
     paginas_granulares: paginasConEntidades
   };

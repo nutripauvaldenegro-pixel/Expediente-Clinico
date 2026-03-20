@@ -40,6 +40,9 @@ export default function AnaliticaEvidencia() {
     }
   };
 
+
+  const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   const handleBuscar = () => {
     try {
       setHasSearched(true);
@@ -53,7 +56,8 @@ export default function AnaliticaEvidencia() {
       const resultados = [];
       const rows = docs[0].values;
 
-      const terminoRegex = new RegExp(`\\b${termino.toLowerCase()}\\b`, 'i');
+      const terminoEscapado = escapeRegex(termino.toLowerCase());
+      const terminoRegex = new RegExp(`\\b${terminoEscapado}\\b`, 'i');
       const negacionRegex = new RegExp(`\\b(sin|no hay|niega|desconoce)\\s+${termino.toLowerCase()}\\b`, 'i');
 
       rows.forEach(row => {

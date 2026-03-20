@@ -96,6 +96,42 @@ const buscarCualquierFecha = (texto, coordenadas) => {
   return fechaPrioritaria;
 };
 
+// Extraer RUT Chileno (formato 12345678-9 o 12.345.678-9)
+export const extraerRUT = (textoPlano) => {
+  const regexRut = /\b\d{1,2}\.?\d{3}\.?\d{3}[-][0-9kK]\b/g;
+  const matches = [...(textoPlano || "").matchAll(regexRut)];
+  if (matches.length > 0) {
+    return matches[0][0]; // Devuelve el primer RUT encontrado
+  }
+  return null;
+};
+
+// Extractor heurístico de Demográficos (Nombre, Edad, RUT)
+export const extraerDemograficos = (textoPlano) => {
+  const demograficos = {};
+  const texto = textoPlano || "";
+
+  // RUT
+  demograficos.rut = extraerRUT(texto);
+
+  // Edad (ej: "Edad: 30 años")
+  const regexEdad = /Edad:?\s*(\d{1,3})\s*(años|a|anos)/i;
+  const matchEdad = texto.match(regexEdad);
+  if (matchEdad) {
+    demograficos.edad = matchEdad[1];
+  }
+
+  // Nombre (busca "Nombre:" seguido de texto en mayúsculas/minúsculas hasta el fin de línea o delimitador)
+  // ej: "Nombre: VALDENEGRO FUENTES PAULA M"
+  const regexNombre = /Nombre:?\s*([A-ZÁÉÍÓÚÑa-záéíóúñ\s]+)(?=R\.U\.N|RUT|Domicilio|Edad|\n|$)/i;
+  const matchNombre = texto.match(regexNombre);
+  if (matchNombre) {
+    demograficos.nombre = matchNombre[1].trim().replace(/\s+/g, ' ');
+  }
+
+  return demograficos;
+};
+
 // Fuzzy Matching para normalización de nombres
 export const normalizarEntidades = (nombre, listaConocida) => {
   let mejorMatch = nombre;

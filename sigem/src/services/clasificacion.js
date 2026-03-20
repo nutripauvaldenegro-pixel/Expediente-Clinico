@@ -8,7 +8,10 @@ export const REGLAS_CLASIFICACION = {
     { token: "sintomatologia", peso: 4 },
     { token: "tratamiento", peso: 3 },
     { token: "paciente", peso: 2 },
-    { token: "atencion medica", peso: 6 }
+    { token: "atencion medica", peso: 6 },
+    { token: "sapu", peso: 6 },
+    { token: "atencion de urgencia", peso: 6 },
+    { token: "signos vitales", peso: 4 }
   ],
   "Reserva de Hora": [
     { token: "reserva", peso: 5 },
@@ -79,7 +82,7 @@ export const clasificarDocumento = (textoNormalizado) => {
     puntuaciones[categoria] = 0;
   }
 
-  const texto = (textoNormalizado || "").toLowerCase().replace(/[.,;:()]/g, ' ');
+  const texto = (textoNormalizado || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.,;:()-\[\]]/g, ' ');
   const palabrasTexto = texto.split(/\s+/).filter(p => p.length > 0);
 
   // Evaluar reglas
