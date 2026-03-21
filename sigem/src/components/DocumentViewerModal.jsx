@@ -298,98 +298,98 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
                         {/* Síntomas */}
-                        <div className="bg-rose-900/20 border border-rose-800/50 rounded-xl p-4 flex flex-col hover:border-rose-700 transition-colors">
+                        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 flex flex-col hover:border-rose-500/50 transition-colors shadow-sm">
                           <h5 className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-rose-500"></span> Síntomas
+                            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span> Síntomas
                           </h5>
                           <div className="flex flex-wrap gap-1.5 flex-1 content-start">
                             {pag.entidades?.sintomas?.length > 0 ? (
                               pag.entidades.sintomas.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-rose-800/50 text-rose-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900/80 border border-rose-500/30 text-rose-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
                             ) : pag.entidades?.sintomas_y_diagnosticos?.length > 0 ? (
                               pag.entidades.sintomas_y_diagnosticos.map((ent, i) => (
-                                <span key={`leg-${i}`} className="bg-slate-900 border border-rose-800/50 text-rose-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={`leg-${i}`} className="bg-slate-900/80 border border-rose-500/30 text-rose-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-500 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
                         {/* Diagnósticos */}
-                        <div className="bg-purple-900/20 border border-purple-800/50 rounded-xl p-4 flex flex-col hover:border-purple-700 transition-colors">
+                        <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 flex flex-col hover:border-purple-500/50 transition-colors shadow-sm">
                           <h5 className="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-purple-500"></span> Diagnósticos
+                            <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></span> Diagnósticos
                           </h5>
                           <div className="flex flex-wrap gap-1.5 flex-1 content-start">
                             {pag.entidades?.diagnosticos?.length > 0 ? (
                               pag.entidades.diagnosticos.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-purple-800/50 text-purple-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900/80 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-500 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
                         {/* Medicamentos */}
-                        <div className="bg-emerald-900/20 border border-emerald-800/50 rounded-xl p-4 flex flex-col hover:border-emerald-700 transition-colors">
+                        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex flex-col hover:border-emerald-500/50 transition-colors shadow-sm">
                           <h5 className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Farmacología
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span> Farmacología
                           </h5>
                           <div className="flex flex-wrap gap-1.5 flex-1 content-start">
                             {pag.entidades?.medicamentos?.length > 0 ? (
                               pag.entidades.medicamentos.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-emerald-800/50 text-emerald-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900/80 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
                             ) : pag.entidades?.medicamentos_y_tratamientos?.length > 0 ? (
                               pag.entidades.medicamentos_y_tratamientos.map((ent, i) => (
-                                <span key={`leg-${i}`} className="bg-slate-900 border border-emerald-800/50 text-emerald-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={`leg-${i}`} className="bg-slate-900/80 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-500 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
                         {/* Tratamientos */}
-                        <div className="bg-teal-900/20 border border-teal-800/50 rounded-xl p-4 flex flex-col hover:border-teal-700 transition-colors">
-                          <h5 className="text-[10px] font-bold text-teal-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-teal-500"></span> Tratamientos
+                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col hover:border-amber-500/50 transition-colors shadow-sm">
+                          <h5 className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span> Tratamientos
                           </h5>
                           <div className="flex flex-wrap gap-1.5 flex-1 content-start">
                             {pag.entidades?.tratamientos?.length > 0 ? (
                               pag.entidades.tratamientos.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-teal-800/50 text-teal-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900/80 border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-500 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
                         {/* Exámenes */}
-                        <div className="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 flex flex-col hover:border-blue-700 transition-colors">
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex flex-col hover:border-blue-500/50 transition-colors shadow-sm">
                           <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-blue-500"></span> Exámenes
+                            <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span> Exámenes
                           </h5>
                           <div className="flex flex-wrap gap-1.5 flex-1 content-start">
                             {pag.entidades?.examenes?.length > 0 ? (
                               pag.entidades.examenes.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-blue-800/50 text-blue-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900/80 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
                             ) : pag.entidades?.procedimientos_y_examenes?.length > 0 ? (
                               pag.entidades.procedimientos_y_examenes.map((ent, i) => (
-                                <span key={`leg-${i}`} className="bg-slate-900 border border-blue-800/50 text-blue-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={`leg-${i}`} className="bg-slate-900/80 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-500 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
                         {/* Procedimientos */}
-                        <div className="bg-cyan-900/20 border border-cyan-800/50 rounded-xl p-4 flex flex-col hover:border-cyan-700 transition-colors">
+                        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 flex flex-col hover:border-cyan-500/50 transition-colors shadow-sm">
                           <h5 className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-cyan-500"></span> Procedimientos
+                            <span className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"></span> Procedimientos
                           </h5>
                           <div className="flex flex-wrap gap-1.5 flex-1 content-start">
                             {pag.entidades?.procedimientos?.length > 0 ? (
                               pag.entidades.procedimientos.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-cyan-800/50 text-cyan-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                                <span key={i} className="bg-slate-900/80 border border-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-500 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
