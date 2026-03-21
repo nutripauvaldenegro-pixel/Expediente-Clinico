@@ -52,19 +52,20 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
   // 4. Construir metadata JSON mejorado con entidades extraídas página por página
   const demograficosGlobales = extraerDemograficos(ocrResult.textoPlano);
 
-  const paginasConEntidades = ocrResult.paginas_granulares.map(pagina => {
+  const paginasConEntidades = [];
+  for (const pagina of ocrResult.paginas_granulares) {
     // Clasificación independiente para cada página (opcional/útil para la cronología)
     const clasePaginada = clasificarDocumento(pagina.textoNormalizado);
     const fechaPaginada = extraerFechaPrincipal(pagina.textoPlano, pagina.coordenadas);
-    const entidades = extraerEntidadesClinicas(pagina.textoNormalizado);
+    const entidades = await extraerEntidadesClinicas(pagina.textoNormalizado);
 
-    return {
+    paginasConEntidades.push({
       ...pagina,
       categoria: clasePaginada.categoria,
       fecha: fechaPaginada,
       entidades: entidades
-    };
-  });
+    });
+  }
 
   const metadata = {
     puntuaciones_heuristica: clasificacion.puntuaciones,
