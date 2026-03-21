@@ -5,10 +5,12 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Componente externo para renderizar una página del PDF
 const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
   const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
 
   useEffect(() => {
     if (!pdfDoc || !canvasRef.current) return;
-    let renderTask = null;
+
+    let isCancelled = false;
 
     const renderPage = async () => {
       try {
@@ -16,13 +18,21 @@ const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
         const viewport = page.getViewport({ scale });
         const canvas = canvasRef.current;
 
-        if (!canvas) return;
+        if (!canvas || isCancelled) return;
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
         const renderContext = { canvasContext: context, viewport: viewport };
-        renderTask = page.render(renderContext);
+
+        // Si hay una tarea anterior en progreso, intentamos cancelarla
+        if (renderTaskRef.current) {
+           renderTaskRef.current.cancel();
+        }
+
+        const renderTask = page.render(renderContext);
+        renderTaskRef.current = renderTask;
+
         await renderTask.promise;
       } catch (e) {
         if (e.name !== 'RenderingCancelledException') {
@@ -34,8 +44,10 @@ const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
     renderPage();
 
     return () => {
-      if (renderTask) {
-        renderTask.cancel();
+      isCancelled = true;
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+        renderTaskRef.current = null;
       }
     };
   }, [pdfDoc, pageNumber, scale]);
@@ -46,10 +58,12 @@ const PdfPage = ({ pdfDoc, pageNumber, scale }) => {
 // Componente externo para renderizar una miniatura del PDF
 const PdfThumbnail = ({ pdfDoc, pageNumber, scale = 0.3 }) => {
   const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
 
   useEffect(() => {
     if (!pdfDoc || !canvasRef.current) return;
-    let renderTask = null;
+
+    let isCancelled = false;
 
     const renderPage = async () => {
       try {
@@ -57,13 +71,20 @@ const PdfThumbnail = ({ pdfDoc, pageNumber, scale = 0.3 }) => {
         const viewport = page.getViewport({ scale });
         const canvas = canvasRef.current;
 
-        if (!canvas) return;
+        if (!canvas || isCancelled) return;
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
         const renderContext = { canvasContext: context, viewport: viewport };
-        renderTask = page.render(renderContext);
+
+        if (renderTaskRef.current) {
+           renderTaskRef.current.cancel();
+        }
+
+        const renderTask = page.render(renderContext);
+        renderTaskRef.current = renderTask;
+
         await renderTask.promise;
       } catch (e) {
         if (e.name !== 'RenderingCancelledException') {
@@ -75,8 +96,10 @@ const PdfThumbnail = ({ pdfDoc, pageNumber, scale = 0.3 }) => {
     renderPage();
 
     return () => {
-      if (renderTask) {
-        renderTask.cancel();
+      isCancelled = true;
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+        renderTaskRef.current = null;
       }
     };
   }, [pdfDoc, pageNumber, scale]);

@@ -58,6 +58,7 @@ export const procesarDocumento = async (file, onProgress) => {
       hash_sha256: hashHex,
       // Retenemos el texto consolidado por completitud si es necesario para búsqueda rápida full-text
       textoPlano: paginas.map(p => p.textoPlano).join('\n\n---\n\n'),
+      textoNormalizado: paginas.map(p => p.textoNormalizado).join(' '),
       paginas_granulares: paginas, // Nueva estructura
       confidence: avgConfidence,
       archivo_blob: originalFileUint8,
