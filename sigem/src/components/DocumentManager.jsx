@@ -121,7 +121,8 @@ export default function DocumentManager() {
   };
 
   const filteredDocs = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = doc.name.toLowerCase().includes(term) || (doc.category && doc.category.toLowerCase().includes(term));
     const isPending = doc.category === 'Desconocido/Pendiente' || !doc.date;
     if (showPendingOnly) return matchesSearch && isPending;
     return matchesSearch;
@@ -130,16 +131,25 @@ export default function DocumentManager() {
   const pendingCount = documents.filter(doc => doc.category === 'Desconocido/Pendiente' || !doc.date).length;
 
   const CategoryBadge = ({ category, docId }) => {
-    const isPending = category === 'Desconocido/Pendiente';
-    const colorClass = isPending
-      ? 'bg-amber-900/40 text-amber-300 border-amber-800'
-      : 'bg-indigo-900 text-indigo-200 border-indigo-800';
+    let colorClass = 'bg-slate-800 text-slate-300 border-slate-700'; // Default
+
+    switch(category) {
+      case 'Atencion Medica': colorClass = 'bg-violet-900/40 text-violet-300 border-violet-800'; break;
+      case 'Reserva de Hora': colorClass = 'bg-sky-900/40 text-sky-300 border-sky-800'; break;
+      case 'Resultado de Examen': colorClass = 'bg-lime-900/40 text-lime-300 border-lime-800'; break;
+      case 'Orden de Examen': colorClass = 'bg-fuchsia-900/40 text-fuchsia-300 border-fuchsia-800'; break;
+      case 'Tratamiento': colorClass = 'bg-orange-900/40 text-orange-300 border-orange-800'; break;
+      case 'Informe': colorClass = 'bg-pink-900/40 text-pink-300 border-pink-800'; break;
+      case 'Certificado': colorClass = 'bg-amber-900/40 text-amber-300 border-amber-800'; break;
+      case 'Receta': colorClass = 'bg-indigo-900/40 text-indigo-300 border-indigo-800'; break;
+      case 'Desconocido/Pendiente': colorClass = 'bg-red-900/40 text-red-400 border-red-800 font-bold animate-pulse'; break;
+    }
 
     return (
       <select
         value={category}
         onChange={(e) => handleCorrection(docId, e.target.value)}
-        className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClass} focus:ring-2 focus:ring-indigo-500 outline-none transition-colors cursor-pointer hover:shadow-sm max-w-[160px] truncate`}
+        className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClass} focus:ring-2 focus:ring-slate-500 outline-none transition-colors cursor-pointer hover:shadow-sm w-full max-w-[180px] truncate`}
       >
         <option value="Atencion Medica">Atención Médica</option>
         <option value="Reserva de Hora">Reserva de Hora</option>
@@ -228,7 +238,7 @@ export default function DocumentManager() {
           </div>
           <input
             type="text"
-            placeholder="Buscar por nombre de archivo..."
+            placeholder="Buscar por nombre o tipo de documento..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 border border-slate-700 rounded-lg leading-5 bg-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-shadow shadow-sm"
@@ -253,7 +263,7 @@ export default function DocumentManager() {
           </button>
           <div className="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-800 px-3 py-1.5 rounded-md">
             <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
-            SHA-256 en {documents.length} docs
+            {documents.length} docs
           </div>
         </div>
       </div>
@@ -263,14 +273,14 @@ export default function DocumentManager() {
         <table className="min-w-full text-left text-sm text-slate-500 whitespace-nowrap">
           <thead className="bg-slate-950/80 text-slate-500 uppercase tracking-wider text-[10px] font-bold sticky top-0 border-b border-slate-800 z-10 backdrop-blur-sm">
             <tr>
+              <th className="px-6 py-4 w-48">Integridad (Hash)</th>
               <th className="px-6 py-4">Documento</th>
-              <th className="px-6 py-4 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Fecha Extraída</th>
-              <th className="px-6 py-4"><span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Tipo de Documento</span></th>
-              <th className="px-6 py-4">Integridad (Hash)</th>
-              <th className="px-6 py-4 text-right">Acciones</th>
+              <th className="px-6 py-4 w-56"><span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Tipo de Documento</span></th>
+              <th className="px-6 py-4 w-32 text-center">Detalle</th>
+              <th className="px-6 py-4 w-24 text-center">Eliminar</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-800/50">
             {documents.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-6 py-20 text-center">
@@ -288,44 +298,42 @@ export default function DocumentManager() {
                 <td colSpan="5" className="px-6 py-12 text-center text-slate-500 italic">No se encontraron resultados para la búsqueda.</td>
               </tr>
             ) : filteredDocs.map(doc => (
-              <tr key={doc.id} className="hover:bg-indigo-900/40/30 transition-colors group">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-slate-800 p-2 rounded text-slate-500 group-hover:text-indigo-500 group-hover:bg-indigo-900 transition-colors">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium text-slate-100 truncate max-w-[200px]" title={doc.name}>{doc.name}</span>
-                  </div>
+              <tr key={doc.id} className="hover:bg-slate-800/30 transition-colors group">
+                <td className="px-6 py-4 font-mono text-[10px] text-slate-500 flex items-center gap-1.5 mt-1" title={doc.hash}>
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  {doc.hash.substring(0, 12)}...
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`font-mono text-xs px-2 py-1 rounded ${doc.date ? 'bg-slate-800 text-slate-600' : 'text-slate-500 italic'}`}>
-                    {doc.date || 'Sin fecha clara'}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800 p-2 rounded text-slate-400 group-hover:text-indigo-400 transition-colors">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-slate-200 truncate max-w-[200px] md:max-w-[300px]" title={doc.name}>{doc.name}</span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">Subido recientemente</span>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <CategoryBadge category={doc.category} docId={doc.id} />
                 </td>
-                <td className="px-6 py-4 font-mono text-[10px] text-slate-500 flex items-center gap-1.5" title={doc.hash}>
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                  {doc.hash.substring(0, 12)}...
+                <td className="px-6 py-4 text-center">
+                   <button
+                     onClick={() => setSelectedDocId(doc.id)}
+                     className="text-slate-300 hover:text-white bg-slate-800 hover:bg-indigo-600 px-3 py-1.5 rounded-md text-xs font-semibold transition-all shadow-sm border border-slate-700 inline-flex items-center gap-1.5 w-full justify-center"
+                   >
+                     Ver Documento
+                     <ChevronRight className="w-3 h-3" />
+                   </button>
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => handleDelete(doc.id, doc.name)}
-                      className="text-rose-400 hover:text-rose-400 bg-slate-900 hover:bg-rose-900/30 border border-slate-800 hover:border-rose-800 p-1.5 rounded-md transition-colors"
-                      title="Eliminar documento"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedDocId(doc.id)}
-                      className="text-indigo-400 hover:text-indigo-100 bg-indigo-900/40 hover:bg-indigo-900 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1"
-                    >
-                      Ver Documento
-                      <ChevronRight className="w-3 h-3" />
-                    </button>
-                  </div>
+                <td className="px-6 py-4 text-center">
+                   <button
+                     onClick={() => handleDelete(doc.id, doc.name)}
+                     className="text-rose-400 hover:text-rose-200 bg-slate-900 hover:bg-rose-600 border border-slate-800 hover:border-rose-500 p-2 rounded-md transition-all shadow-sm w-full inline-flex justify-center items-center"
+                     title="Eliminar documento"
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </button>
                 </td>
               </tr>
             ))}
