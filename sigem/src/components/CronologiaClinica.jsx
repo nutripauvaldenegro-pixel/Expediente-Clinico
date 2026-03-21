@@ -34,11 +34,16 @@ export default function CronologiaClinica() {
           const metadata = JSON.parse(row[2]);
           if (metadata.paginas_granulares) {
             metadata.paginas_granulares.forEach(pag => {
-              if (!pag.fecha) return;
 
-              const fechaObj = new Date(pag.fecha);
-              // Validar fecha real
-              if (isNaN(fechaObj.getTime())) return;
+              let fechaObj = new Date(pag.fecha);
+              let fechaStr = pag.fecha;
+
+              // Validar fecha real. Si no hay, o es inválida, agrupar bajo "Sin Fecha"
+              if (!pag.fecha || isNaN(fechaObj.getTime())) {
+                 // Asignamos una fecha arbitraria antigua (ej: año 1900) para que se ordene al final cronológicamente.
+                 fechaObj = new Date("1900-01-01T00:00:00");
+                 fechaStr = "Fecha Desconocida";
+              }
 
               // Para la vista de detalle, no expandimos en 1 evento por entidad.
               // Agrupamos la página entera como 1 hito temporal con toda su metadata rica.
@@ -62,7 +67,7 @@ export default function CronologiaClinica() {
                 docId,
                 nombreDoc,
                 pageNumber: pag.pageNumber,
-                fecha: pag.fecha,
+                fecha: fechaStr,
                 fechaObj: fechaObj,
                 categoriaPagina: pag.categoria,
                 tipoEntidad: mainType, // Primary classification for filtering
@@ -94,6 +99,7 @@ export default function CronologiaClinica() {
   };
 
   const getMonthKey = (fechaObj) => {
+    if (fechaObj.getFullYear() === 1900) return "Sin Fecha Registrada";
     const mes = fechaObj.toLocaleString('es-ES', { month: 'long' });
     const anio = fechaObj.getFullYear();
     return `${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anio}`;
@@ -125,7 +131,10 @@ export default function CronologiaClinica() {
   // Group filtered events heavily: Month/Year -> Exact Date -> Event List
   const timelineTree = eventosFiltrados.reduce((acc, evento) => {
     const monthKey = getMonthKey(evento.fechaObj);
-    const dateKey = evento.fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const isUnknownDate = evento.fechaObj.getFullYear() === 1900;
+    const dateKey = isUnknownDate
+      ? 'Fecha Original No Detectada'
+      : evento.fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
     if (!acc[monthKey]) acc[monthKey] = {};
     if (!acc[monthKey][dateKey]) acc[monthKey][dateKey] = [];
