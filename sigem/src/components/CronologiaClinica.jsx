@@ -68,20 +68,28 @@ export default function CronologiaClinica() {
 
               // Para la vista de detalle, no expandimos en 1 evento por entidad.
               // Agrupamos la página entera como 1 hito temporal con toda su metadata rica.
-              const noHayEntidades = (!pag.entidades?.sintomas_y_diagnosticos?.length && !pag.entidades?.medicamentos_y_tratamientos?.length && !pag.entidades?.procedimientos_y_examenes?.length);
+              const tieneLegado = pag.entidades?.sintomas_y_diagnosticos?.length || pag.entidades?.medicamentos_y_tratamientos?.length || pag.entidades?.procedimientos_y_examenes?.length;
+              const tieneNuevas = pag.entidades?.sintomas?.length || pag.entidades?.diagnosticos?.length || pag.entidades?.medicamentos?.length || pag.entidades?.tratamientos?.length || pag.entidades?.examenes?.length || pag.entidades?.procedimientos?.length;
+              const noHayEntidades = (!tieneLegado && !tieneNuevas);
 
-              // Determinar icono principal y color basado en entidades detectadas
+              // Determinar icono principal y color basado en entidades detectadas (priorizando el modelo nuevo, luego el legado)
               let mainIcon = FileText;
               let colorCls = 'slate';
               let mainType = 'documento';
               let mainTitle = `Registro: ${pag.categoria}`;
 
-              if (pag.entidades?.sintomas_y_diagnosticos?.length > 0) {
-                mainIcon = Heart; colorCls = 'rose'; mainType = 'sintomas'; mainTitle = pag.entidades.sintomas_y_diagnosticos[0];
-              } else if (pag.entidades?.medicamentos_y_tratamientos?.length > 0) {
-                mainIcon = Pill; colorCls = 'emerald'; mainType = 'medicamentos'; mainTitle = pag.entidades.medicamentos_y_tratamientos[0];
-              } else if (pag.entidades?.procedimientos_y_examenes?.length > 0) {
-                mainIcon = Stethoscope; colorCls = 'blue'; mainType = 'procedimientos'; mainTitle = pag.entidades.procedimientos_y_examenes[0];
+              if (pag.entidades?.sintomas?.length > 0 || pag.entidades?.sintomas_y_diagnosticos?.length > 0) {
+                mainIcon = Heart; colorCls = 'rose'; mainType = 'sintomas'; mainTitle = pag.entidades?.sintomas?.[0] || pag.entidades?.sintomas_y_diagnosticos?.[0];
+              } else if (pag.entidades?.diagnosticos?.length > 0) {
+                mainIcon = Heart; colorCls = 'purple'; mainType = 'diagnosticos'; mainTitle = pag.entidades.diagnosticos[0];
+              } else if (pag.entidades?.medicamentos?.length > 0 || pag.entidades?.medicamentos_y_tratamientos?.length > 0) {
+                mainIcon = Pill; colorCls = 'emerald'; mainType = 'medicamentos'; mainTitle = pag.entidades?.medicamentos?.[0] || pag.entidades?.medicamentos_y_tratamientos?.[0];
+              } else if (pag.entidades?.tratamientos?.length > 0) {
+                mainIcon = Pill; colorCls = 'teal'; mainType = 'tratamientos'; mainTitle = pag.entidades.tratamientos[0];
+              } else if (pag.entidades?.examenes?.length > 0 || pag.entidades?.procedimientos_y_examenes?.length > 0) {
+                mainIcon = Stethoscope; colorCls = 'blue'; mainType = 'examenes'; mainTitle = pag.entidades?.examenes?.[0] || pag.entidades?.procedimientos_y_examenes?.[0];
+              } else if (pag.entidades?.procedimientos?.length > 0) {
+                mainIcon = Stethoscope; colorCls = 'cyan'; mainType = 'procedimientos'; mainTitle = pag.entidades.procedimientos[0];
               }
 
               eventosExtraidos.push({
@@ -130,9 +138,9 @@ export default function CronologiaClinica() {
     // Para simplificar la búsqueda en el nuevo diseño agrupado,
     // buscaremos en todas las entidades de la página.
     if (filtroTipo !== 'todos') {
-       if (filtroTipo === 'sintomas' && !ev.entidadesOriginales.sintomas_y_diagnosticos?.length) return false;
-       if (filtroTipo === 'medicamentos' && !ev.entidadesOriginales.medicamentos_y_tratamientos?.length) return false;
-       if (filtroTipo === 'procedimientos' && !ev.entidadesOriginales.procedimientos_y_examenes?.length) return false;
+       if (filtroTipo === 'sintomas' && !ev.entidadesOriginales.sintomas_y_diagnosticos?.length && !ev.entidadesOriginales.sintomas?.length && !ev.entidadesOriginales.diagnosticos?.length) return false;
+       if (filtroTipo === 'medicamentos' && !ev.entidadesOriginales.medicamentos_y_tratamientos?.length && !ev.entidadesOriginales.medicamentos?.length && !ev.entidadesOriginales.tratamientos?.length) return false;
+       if (filtroTipo === 'procedimientos' && !ev.entidadesOriginales.procedimientos_y_examenes?.length && !ev.entidadesOriginales.examenes?.length && !ev.entidadesOriginales.procedimientos?.length) return false;
     }
 
     if (filtroTexto) {
@@ -141,7 +149,13 @@ export default function CronologiaClinica() {
         ev.entidad, ev.categoriaPagina,
         ...(ev.entidadesOriginales.sintomas_y_diagnosticos || []),
         ...(ev.entidadesOriginales.medicamentos_y_tratamientos || []),
-        ...(ev.entidadesOriginales.procedimientos_y_examenes || [])
+        ...(ev.entidadesOriginales.procedimientos_y_examenes || []),
+        ...(ev.entidadesOriginales.sintomas || []),
+        ...(ev.entidadesOriginales.diagnosticos || []),
+        ...(ev.entidadesOriginales.medicamentos || []),
+        ...(ev.entidadesOriginales.tratamientos || []),
+        ...(ev.entidadesOriginales.examenes || []),
+        ...(ev.entidadesOriginales.procedimientos || [])
       ].join(' ').toLowerCase();
 
       if (!textBlock.includes(search)) return false;
@@ -353,15 +367,19 @@ export default function CronologiaClinica() {
                                        <Activity className="w-4 h-4" /> Información Extraída Automáticamente
                                     </div>
 
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                       {renderBadge(evento.entidadesOriginales.sintomas_y_diagnosticos, 'rose', 'Motivo de Consulta / Diagnóstico')}
-                                       {renderBadge(evento.entidadesOriginales.medicamentos_y_tratamientos, 'emerald', 'Tratamiento / Medicamentos')}
-                                       <div className="md:col-span-2">
-                                         {renderBadge(evento.entidadesOriginales.procedimientos_y_examenes, 'blue', 'Exámenes / Procedimientos')}
-                                       </div>
+                                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                       {/* Legacy Fallbacks are merged into the primary ones visually for backward compatibility */}
+                                       {renderBadge(evento.entidadesOriginales.sintomas?.length > 0 ? evento.entidadesOriginales.sintomas : evento.entidadesOriginales.sintomas_y_diagnosticos, 'rose', 'Síntomas')}
+                                       {renderBadge(evento.entidadesOriginales.diagnosticos, 'purple', 'Diagnósticos')}
+
+                                       {renderBadge(evento.entidadesOriginales.medicamentos?.length > 0 ? evento.entidadesOriginales.medicamentos : evento.entidadesOriginales.medicamentos_y_tratamientos, 'emerald', 'Farmacología')}
+                                       {renderBadge(evento.entidadesOriginales.tratamientos, 'teal', 'Tratamientos')}
+
+                                       {renderBadge(evento.entidadesOriginales.examenes?.length > 0 ? evento.entidadesOriginales.examenes : evento.entidadesOriginales.procedimientos_y_examenes, 'blue', 'Exámenes')}
+                                       {renderBadge(evento.entidadesOriginales.procedimientos, 'cyan', 'Procedimientos')}
                                     </div>
 
-                                    {(!evento.entidadesOriginales.sintomas_y_diagnosticos?.length && !evento.entidadesOriginales.medicamentos_y_tratamientos?.length && !evento.entidadesOriginales.procedimientos_y_examenes?.length) && (
+                                    {(!evento.entidadesOriginales.sintomas_y_diagnosticos?.length && !evento.entidadesOriginales.medicamentos_y_tratamientos?.length && !evento.entidadesOriginales.procedimientos_y_examenes?.length && !evento.entidadesOriginales.sintomas?.length && !evento.entidadesOriginales.diagnosticos?.length && !evento.entidadesOriginales.medicamentos?.length && !evento.entidadesOriginales.tratamientos?.length && !evento.entidadesOriginales.examenes?.length && !evento.entidadesOriginales.procedimientos?.length) && (
                                       <div className="bg-slate-950 border border-slate-800 rounded-lg p-6 text-center">
                                         <p className="text-slate-500 text-sm italic">No se detectaron entidades clínicas específicas estructuradas en esta página. Revisa el documento original.</p>
                                       </div>

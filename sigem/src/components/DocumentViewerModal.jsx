@@ -189,7 +189,7 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
             onClick={() => setActiveView('metadata')}
             className={`py-2 px-4 text-sm font-semibold border-b-2 transition-colors ${activeView === 'metadata' ? 'border-indigo-600 text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-200'}`}
           >
-            Metadatos Analíticos
+            Información Extraída
           </button>
         </div>
 
@@ -294,41 +294,101 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                       <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Tag className="w-4 h-4" /> Entidades Clínicas Detectadas
                       </h4>
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-                        {/* Síntomas y Diagnósticos */}
-                        <div className="bg-rose-900/30/50 border border-rose-100 rounded-xl p-4">
-                          <h5 className="text-xs font-bold text-rose-300 uppercase tracking-wider mb-3">Síntomas / Diagnósticos</h5>
-                          <div className="flex flex-wrap gap-2">
-                            {pag.entidades?.sintomas_y_diagnosticos?.length > 0 ? (
+                        {/* Síntomas */}
+                        <div className="bg-rose-900/20 border border-rose-800/50 rounded-xl p-4 flex flex-col hover:border-rose-700 transition-colors">
+                          <h5 className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-500"></span> Síntomas
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                            {pag.entidades?.sintomas?.length > 0 ? (
+                              pag.entidades.sintomas.map((ent, i) => (
+                                <span key={i} className="bg-slate-900 border border-rose-800/50 text-rose-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                              ))
+                            ) : pag.entidades?.sintomas_y_diagnosticos?.length > 0 ? (
                               pag.entidades.sintomas_y_diagnosticos.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-rose-800 text-rose-400 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                                <span key={`leg-${i}`} className="bg-slate-900 border border-rose-800/50 text-rose-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-rose-400 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
-                        {/* Tratamientos y Medicamentos */}
-                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4">
-                          <h5 className="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-3">Tratamiento / Farmacología</h5>
-                          <div className="flex flex-wrap gap-2">
-                            {pag.entidades?.medicamentos_y_tratamientos?.length > 0 ? (
+                        {/* Diagnósticos */}
+                        <div className="bg-purple-900/20 border border-purple-800/50 rounded-xl p-4 flex flex-col hover:border-purple-700 transition-colors">
+                          <h5 className="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-purple-500"></span> Diagnósticos
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                            {pag.entidades?.diagnosticos?.length > 0 ? (
+                              pag.entidades.diagnosticos.map((ent, i) => (
+                                <span key={i} className="bg-slate-900 border border-purple-800/50 text-purple-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                              ))
+                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                          </div>
+                        </div>
+
+                        {/* Medicamentos */}
+                        <div className="bg-emerald-900/20 border border-emerald-800/50 rounded-xl p-4 flex flex-col hover:border-emerald-700 transition-colors">
+                          <h5 className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Farmacología
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                            {pag.entidades?.medicamentos?.length > 0 ? (
+                              pag.entidades.medicamentos.map((ent, i) => (
+                                <span key={i} className="bg-slate-900 border border-emerald-800/50 text-emerald-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                              ))
+                            ) : pag.entidades?.medicamentos_y_tratamientos?.length > 0 ? (
                               pag.entidades.medicamentos_y_tratamientos.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                                <span key={`leg-${i}`} className="bg-slate-900 border border-emerald-800/50 text-emerald-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-emerald-400 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
                           </div>
                         </div>
 
-                        {/* Procedimientos y Examenes */}
-                        <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 md:col-span-2">
-                          <h5 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-3">Procedimientos / Exámenes</h5>
-                          <div className="flex flex-wrap gap-2">
-                            {pag.entidades?.procedimientos_y_examenes?.length > 0 ? (
-                              pag.entidades.procedimientos_y_examenes.map((ent, i) => (
-                                <span key={i} className="bg-slate-900 border border-blue-200 text-blue-400 px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm">{ent}</span>
+                        {/* Tratamientos */}
+                        <div className="bg-teal-900/20 border border-teal-800/50 rounded-xl p-4 flex flex-col hover:border-teal-700 transition-colors">
+                          <h5 className="text-[10px] font-bold text-teal-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-teal-500"></span> Tratamientos
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                            {pag.entidades?.tratamientos?.length > 0 ? (
+                              pag.entidades.tratamientos.map((ent, i) => (
+                                <span key={i} className="bg-slate-900 border border-teal-800/50 text-teal-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
                               ))
-                            ) : <span className="text-xs text-blue-400 italic">No se detectaron.</span>}
+                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                          </div>
+                        </div>
+
+                        {/* Exámenes */}
+                        <div className="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 flex flex-col hover:border-blue-700 transition-colors">
+                          <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-blue-500"></span> Exámenes
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                            {pag.entidades?.examenes?.length > 0 ? (
+                              pag.entidades.examenes.map((ent, i) => (
+                                <span key={i} className="bg-slate-900 border border-blue-800/50 text-blue-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                              ))
+                            ) : pag.entidades?.procedimientos_y_examenes?.length > 0 ? (
+                              pag.entidades.procedimientos_y_examenes.map((ent, i) => (
+                                <span key={`leg-${i}`} className="bg-slate-900 border border-blue-800/50 text-blue-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                              ))
+                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
+                          </div>
+                        </div>
+
+                        {/* Procedimientos */}
+                        <div className="bg-cyan-900/20 border border-cyan-800/50 rounded-xl p-4 flex flex-col hover:border-cyan-700 transition-colors">
+                          <h5 className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-cyan-500"></span> Procedimientos
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                            {pag.entidades?.procedimientos?.length > 0 ? (
+                              pag.entidades.procedimientos.map((ent, i) => (
+                                <span key={i} className="bg-slate-900 border border-cyan-800/50 text-cyan-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{ent}</span>
+                              ))
+                            ) : <span className="text-xs text-slate-600 italic">No se detectaron.</span>}
                           </div>
                         </div>
 

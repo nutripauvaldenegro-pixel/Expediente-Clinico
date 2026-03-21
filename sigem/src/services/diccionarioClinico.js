@@ -1,34 +1,42 @@
 export const DICCIONARIO_CLINICO = {
-  sintomas_y_diagnosticos: [
-    "cefalea", "fiebre", "tos", "mialgia", "astenia", "hipertension", "diabetes",
-    "asma", "dolor abdominal", "disnea", "nauseas", "vomitos", "diarrea",
-    "mareos", "vertigo", "fatiga", "ansiedad", "depresion", "obesidad",
-    "dislipidemia", "arritmia", "taquicardia", "bradicardia", "hipotiroidismo",
-    "hipertiroidismo", "artritis", "artrosis", "lumbalgia", "cervicalgia", "alergia",
-    "insomnio", "anemia", "gastritis", "infeccion", "sindrome", "traumatismo",
-    "fractura", "esguince", "inflamacion", "edema", "hemorragia", "convulsiones",
+  sintomas: [
+    "cefalea", "fiebre", "tos", "mialgia", "astenia", "dolor abdominal", "disnea",
+    "nauseas", "vomitos", "diarrea", "mareos", "vertigo", "fatiga", "ansiedad",
+    "depresion", "insomnio", "inflamacion", "edema", "hemorragia", "convulsiones",
     "sintomatologia", "motivo de consulta"
   ],
-  medicamentos_y_tratamientos: [
+  diagnosticos: [
+    "hipertension", "diabetes", "asma", "obesidad", "dislipidemia", "arritmia",
+    "taquicardia", "bradicardia", "hipotiroidismo", "hipertiroidismo", "artritis",
+    "artrosis", "lumbalgia", "cervicalgia", "alergia", "anemia", "gastritis",
+    "infeccion", "sindrome", "traumatismo", "fractura", "esguince", "diagnostico"
+  ],
+  medicamentos: [
     "paracetamol", "ibuprofeno", "amoxicilina", "azitromicina", "losartan",
     "enalapril", "metformina", "insulina", "omeprazol", "levotiroxina",
     "atorvastatina", "simvastatina", "aspirina", "diclofenaco", "naproxeno",
     "ketorolaco", "tramadol", "clonazepam", "diazepam", "alprazolam",
     "lorazepam", "fluoxetina", "sertralina", "escitalopram", "salbutamol",
-    "budesonida", "prednisona", "hidrocortisona", "dexametasona", "ibuprofeno",
-    "antibiotico", "analgesico", "antiinflamatorio", "antidepresivo", "antihipertensivo",
-    "corticoides", "jarabe", "comprimidos", "capsulas", "inyeccion", "suero",
+    "budesonida", "prednisona", "hidrocortisona", "dexametasona", "antibiotico",
+    "analgesico", "antiinflamatorio", "antidepresivo", "antihipertensivo",
+    "corticoides", "jarabe", "comprimidos", "capsulas", "inyeccion", "suero"
+  ],
+  tratamientos: [
+    "tratamiento", "terapia", "kinesiologia", "fisioterapia", "psicoterapia",
+    "reposo", "dieta", "ejercicio", "cirugia", "sutura", "intervencion",
     "tratamiento farmacologico"
   ],
-  procedimientos_y_examenes: [
+  examenes: [
     "ecografia", "tomografia", "tac", "resonancia magnetica", "rmn", "radiografia",
     "rayos x", "electrocardiograma", "ecocardiograma", "endoscopia", "colonoscopia",
     "hemograma", "perfil lipidico", "glicemia", "creatinina", "urea", "acido urico",
-    "orina completa", "pcr", "test de antigeno", "biopsia", "cirugia", "sutura",
-    "kinesiologia", "fisioterapia", "psicoterapia", "examen", "laboratorio",
-    "muestra", "cultivo", "urocultivo", "procedimiento", "signos vitales",
-    "frecuencia cardiaca", "presion arterial", "temperatura", "saturacion",
-    "glicemia capilar"
+    "orina completa", "pcr", "test de antigeno", "biopsia", "examen", "laboratorio",
+    "muestra", "cultivo", "urocultivo"
+  ],
+  procedimientos: [
+    "procedimiento", "signos vitales", "frecuencia cardiaca", "presion arterial",
+    "temperatura", "saturacion", "glicemia capilar", "toma de muestra", "curacion",
+    "evaluacion", "control"
   ]
 };
 
@@ -36,9 +44,12 @@ import fastLevenshtein from 'fast-levenshtein';
 
 export const extraerEntidadesClinicas = (textoNormalizado) => {
   const entidadesEncontradas = {
-    sintomas_y_diagnosticos: [],
-    medicamentos_y_tratamientos: [],
-    procedimientos_y_examenes: []
+    sintomas: [],
+    diagnosticos: [],
+    medicamentos: [],
+    tratamientos: [],
+    examenes: [],
+    procedimientos: []
   };
 
   // Normalizar para quitar acentos y limpiar caracteres especiales
