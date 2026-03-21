@@ -99,7 +99,7 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
 
     if (documentId) {
       try {
-        const stmt = db.prepare(`SELECT nombre_archivo, texto_raw, metadata_json, hash_sha256, archivo_blob, archivo_mime FROM documentos WHERE id = ?`);
+        const stmt = db.prepare(`SELECT nombre_archivo, texto_raw, metadata_json, hash_sha256, archivo_blob, archivo_mime, categoria_sugerida FROM documentos WHERE id = ?`);
         stmt.bind([documentId]);
         if (stmt.step()) {
           const row = stmt.getAsObject();
@@ -108,7 +108,8 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
             text: row.texto_raw,
             metadata: JSON.parse(row.metadata_json),
             hash: row.hash_sha256,
-            mime: row.archivo_mime
+            mime: row.archivo_mime,
+            category: row.categoria_sugerida
           });
 
           if (row.archivo_blob) {
@@ -277,7 +278,7 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                   <div className="flex-1 space-y-6">
                     <div className="flex justify-between items-end border-b border-slate-800 pb-4">
                       <div>
-                        <h2 className="text-2xl font-bold text-slate-100">{pag.categoria}</h2>
+                        <h2 className="text-2xl font-bold text-slate-100">{docData.category || pag.categoria}</h2>
                         <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
                           <Calendar className="w-4 h-4" /> {pag.fecha || 'Fecha desconocida'}
                         </p>
