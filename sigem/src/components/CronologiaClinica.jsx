@@ -17,6 +17,27 @@ export default function CronologiaClinica() {
     cargarCronologia();
   }, []);
 
+  const parseDateRobust = (dateStr) => {
+    if (!dateStr) return new Date("invalid");
+    let normalizada = dateStr.replace(/\//g, '-').trim();
+
+    const partes = normalizada.split('-');
+    if (partes.length === 3) {
+      // Formato YY-MM-DD (Ej. 25-12-30 -> 2025-12-30)
+      if (partes[0].length === 2 && parseInt(partes[0]) > 20) {
+        return new Date(`20${partes[0]}-${partes[1]}-${partes[2]}`);
+      }
+      // Formato DD-MM-YYYY o DD-MM-YY (Ej. 30-12-2025 o 30-12-25)
+      if (partes[0].length <= 2 && (partes[2].length === 4 || partes[2].length === 2)) {
+         let year = partes[2].length === 2 ? `20${partes[2]}` : partes[2];
+         return new Date(`${year}-${partes[1]}-${partes[0]}`);
+      }
+    }
+
+    // Fallback nativo
+    return new Date(dateStr);
+  };
+
   const cargarCronologia = () => {
     try {
       const db = getDb();
@@ -35,7 +56,7 @@ export default function CronologiaClinica() {
           if (metadata.paginas_granulares) {
             metadata.paginas_granulares.forEach(pag => {
 
-              let fechaObj = new Date(pag.fecha);
+              let fechaObj = parseDateRobust(pag.fecha);
               let fechaStr = pag.fecha;
 
               // Validar fecha real. Si no hay, o es inválida, agrupar bajo "Sin Fecha"
