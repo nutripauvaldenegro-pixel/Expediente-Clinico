@@ -85,7 +85,7 @@ export default function CronologiaClinica() {
               } else if (pag.entidades?.medicamentos?.length > 0 || pag.entidades?.medicamentos_y_tratamientos?.length > 0) {
                 mainIcon = Pill; colorCls = 'emerald'; mainType = 'medicamentos'; mainTitle = pag.entidades?.medicamentos?.[0] || pag.entidades?.medicamentos_y_tratamientos?.[0];
               } else if (pag.entidades?.tratamientos?.length > 0) {
-                mainIcon = Pill; colorCls = 'teal'; mainType = 'tratamientos'; mainTitle = pag.entidades.tratamientos[0];
+                mainIcon = Pill; colorCls = 'amber'; mainType = 'tratamientos'; mainTitle = pag.entidades.tratamientos[0];
               } else if (pag.entidades?.examenes?.length > 0 || pag.entidades?.procedimientos_y_examenes?.length > 0) {
                 mainIcon = Stethoscope; colorCls = 'blue'; mainType = 'examenes'; mainTitle = pag.entidades?.examenes?.[0] || pag.entidades?.procedimientos_y_examenes?.[0];
               } else if (pag.entidades?.procedimientos?.length > 0) {
@@ -181,11 +181,13 @@ export default function CronologiaClinica() {
   const renderBadge = (lista, colorTheme, title) => {
     if (!lista || lista.length === 0) return null;
     return (
-      <div className={`bg-${colorTheme}-900/30 border border-${colorTheme}-800/50 rounded-lg p-3 w-full`}>
-        <h5 className={`text-[10px] font-bold text-${colorTheme}-400 uppercase tracking-wider mb-2`}>{title}</h5>
-        <div className="flex flex-wrap gap-1.5">
+      <div className={`bg-${colorTheme}-500/10 border border-${colorTheme}-500/30 rounded-xl p-4 flex flex-col hover:border-${colorTheme}-500/50 transition-colors shadow-sm`}>
+        <h5 className={`text-[10px] font-bold text-${colorTheme}-400 uppercase tracking-wider mb-3 flex items-center gap-1.5`}>
+           <span className={`w-2 h-2 rounded-full bg-${colorTheme}-500 shadow-[0_0_8px_rgba(var(--tw-colors-${colorTheme}-500),0.6)]`}></span> {title}
+        </h5>
+        <div className="flex flex-wrap gap-1.5 flex-1 content-start">
           {lista.map((item, i) => (
-            <span key={i} className="bg-slate-900 border border-slate-700 text-slate-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{item}</span>
+            <span key={i} className={`bg-slate-900/80 border border-${colorTheme}-500/30 text-${colorTheme}-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm`}>{item}</span>
           ))}
         </div>
       </div>
@@ -373,7 +375,7 @@ export default function CronologiaClinica() {
                                        {renderBadge(evento.entidadesOriginales.diagnosticos, 'purple', 'Diagnósticos')}
 
                                        {renderBadge(evento.entidadesOriginales.medicamentos?.length > 0 ? evento.entidadesOriginales.medicamentos : evento.entidadesOriginales.medicamentos_y_tratamientos, 'emerald', 'Farmacología')}
-                                       {renderBadge(evento.entidadesOriginales.tratamientos, 'teal', 'Tratamientos')}
+                                       {renderBadge(evento.entidadesOriginales.tratamientos, 'amber', 'Tratamientos')}
 
                                        {renderBadge(evento.entidadesOriginales.examenes?.length > 0 ? evento.entidadesOriginales.examenes : evento.entidadesOriginales.procedimientos_y_examenes, 'blue', 'Exámenes')}
                                        {renderBadge(evento.entidadesOriginales.procedimientos, 'cyan', 'Procedimientos')}
