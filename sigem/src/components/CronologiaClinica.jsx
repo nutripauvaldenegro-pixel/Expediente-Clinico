@@ -9,6 +9,10 @@ export default function CronologiaClinica() {
   const [filtroTipo, setFiltroTipo] = useState('todos'); // 'todos' | 'sintomas' | 'medicamentos' | 'procedimientos'
   const [selectedDocId, setSelectedDocId] = useState(null);
 
+  // Interactive UI State
+  const [expandedMonth, setExpandedMonth] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+
   useEffect(() => {
     cargarCronologia();
   }, []);
@@ -30,92 +34,119 @@ export default function CronologiaClinica() {
           const metadata = JSON.parse(row[2]);
           if (metadata.paginas_granulares) {
             metadata.paginas_granulares.forEach(pag => {
-              // Filtrar páginas sin fecha válida (opcional, pero útil para cronología)
               if (!pag.fecha) return;
 
-              // Expandimos cada entidad encontrada como un evento distinto en la línea de tiempo
-              const crearEventos = (lista, tipoOriginal, icono, colorCls) => {
-                if (!lista) return;
-                lista.forEach(entidad => {
-                  eventosExtraidos.push({
-                    docId,
-                    nombreDoc,
-                    pageNumber: pag.pageNumber,
-                    fecha: pag.fecha,
-                    categoriaPagina: pag.categoria,
-                    tipoEntidad: tipoOriginal,
-                    entidad: entidad,
-                    icono,
-                    colorCls
-                  });
-                });
-              };
+              const fechaObj = new Date(pag.fecha);
+              // Filtrar solo años mayores a 2023
+              if (isNaN(fechaObj.getTime()) || fechaObj.getFullYear() <= 2023) return;
 
-              crearEventos(pag.entidades?.sintomas_y_diagnosticos, 'sintomas', Heart, 'rose');
-              crearEventos(pag.entidades?.medicamentos_y_tratamientos, 'medicamentos', Pill, 'emerald');
-              crearEventos(pag.entidades?.procedimientos_y_examenes, 'procedimientos', Stethoscope, 'blue');
-
-              // Si la página no tiene entidades, mostramos al menos un evento "genérico" de documento
+              // Para la vista de detalle, no expandimos en 1 evento por entidad.
+              // Agrupamos la página entera como 1 hito temporal con toda su metadata rica.
               const noHayEntidades = (!pag.entidades?.sintomas_y_diagnosticos?.length && !pag.entidades?.medicamentos_y_tratamientos?.length && !pag.entidades?.procedimientos_y_examenes?.length);
 
-              if (noHayEntidades) {
-                eventosExtraidos.push({
-                  docId,
-                  nombreDoc,
-                  pageNumber: pag.pageNumber,
-                  fecha: pag.fecha,
-                  categoriaPagina: pag.categoria,
-                  tipoEntidad: 'documento',
-                  entidad: `Registro: ${pag.categoria}`,
-                  icono: FileText,
-                  colorCls: 'slate'
-                });
+              // Determinar icono principal y color basado en entidades detectadas
+              let mainIcon = FileText;
+              let colorCls = 'slate';
+              let mainType = 'documento';
+              let mainTitle = `Registro: ${pag.categoria}`;
+
+              if (pag.entidades?.sintomas_y_diagnosticos?.length > 0) {
+                mainIcon = Heart; colorCls = 'rose'; mainType = 'sintomas'; mainTitle = pag.entidades.sintomas_y_diagnosticos[0];
+              } else if (pag.entidades?.medicamentos_y_tratamientos?.length > 0) {
+                mainIcon = Pill; colorCls = 'emerald'; mainType = 'medicamentos'; mainTitle = pag.entidades.medicamentos_y_tratamientos[0];
+              } else if (pag.entidades?.procedimientos_y_examenes?.length > 0) {
+                mainIcon = Stethoscope; colorCls = 'blue'; mainType = 'procedimientos'; mainTitle = pag.entidades.procedimientos_y_examenes[0];
               }
+
+              eventosExtraidos.push({
+                docId,
+                nombreDoc,
+                pageNumber: pag.pageNumber,
+                fecha: pag.fecha,
+                fechaObj: fechaObj,
+                categoriaPagina: pag.categoria,
+                tipoEntidad: mainType, // Primary classification for filtering
+                entidad: mainTitle, // Primary title
+                icono: mainIcon,
+                colorCls: colorCls,
+                entidadesOriginales: pag.entidades || {},
+                confidence: pag.confidence || 0
+              });
             });
           }
         } catch(e) {}
       });
 
-      // Ordenar por fecha cronológica (de más antiguo a más nuevo o viceversa)
-      // Como las fechas están en formato YYYY-MM-DD o similares, sort string básico funciona la mayoría de las veces
-      eventosExtraidos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      // Ordenar cronológicamente (más nuevo a más antiguo)
+      eventosExtraidos.sort((a, b) => b.fechaObj - a.fechaObj);
 
       setEventos(eventosExtraidos);
+
+      // Expand the first available month by default if any events exist
+      if (eventosExtraidos.length > 0) {
+        const firstEventMonth = getMonthKey(eventosExtraidos[0].fechaObj);
+        setExpandedMonth(firstEventMonth);
+      }
+
     } catch (e) {
       console.error("Error cargando cronología", e);
     }
   };
 
-  const eventosFiltrados = eventos.filter(ev => {
-    // Filtro por tipo
-    if (filtroTipo !== 'todos' && ev.tipoEntidad !== filtroTipo) return false;
+  const getMonthKey = (fechaObj) => {
+    const mes = fechaObj.toLocaleString('es-ES', { month: 'long' });
+    const anio = fechaObj.getFullYear();
+    return `${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anio}`;
+  };
 
-    // Filtro por texto
+  const eventosFiltrados = eventos.filter(ev => {
+    // Para simplificar la búsqueda en el nuevo diseño agrupado,
+    // buscaremos en todas las entidades de la página.
+    if (filtroTipo !== 'todos') {
+       if (filtroTipo === 'sintomas' && !ev.entidadesOriginales.sintomas_y_diagnosticos?.length) return false;
+       if (filtroTipo === 'medicamentos' && !ev.entidadesOriginales.medicamentos_y_tratamientos?.length) return false;
+       if (filtroTipo === 'procedimientos' && !ev.entidadesOriginales.procedimientos_y_examenes?.length) return false;
+    }
+
     if (filtroTexto) {
       const search = filtroTexto.toLowerCase();
-      if (!ev.entidad.toLowerCase().includes(search) && !ev.categoriaPagina.toLowerCase().includes(search)) {
-        return false;
-      }
+      const textBlock = [
+        ev.entidad, ev.categoriaPagina,
+        ...(ev.entidadesOriginales.sintomas_y_diagnosticos || []),
+        ...(ev.entidadesOriginales.medicamentos_y_tratamientos || []),
+        ...(ev.entidadesOriginales.procedimientos_y_examenes || [])
+      ].join(' ').toLowerCase();
+
+      if (!textBlock.includes(search)) return false;
     }
     return true;
   });
 
-  // Group filtered events by Month and Year
-  const eventosAgrupados = eventosFiltrados.reduce((acc, evento) => {
-    let fechaObj = new Date(evento.fecha);
-    let key = "Fecha no disponible";
+  // Group filtered events heavily: Month/Year -> Exact Date -> Event List
+  const timelineTree = eventosFiltrados.reduce((acc, evento) => {
+    const monthKey = getMonthKey(evento.fechaObj);
+    const dateKey = evento.fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Valid date check
-    if (!isNaN(fechaObj.getTime())) {
-      const mes = fechaObj.toLocaleString('es-ES', { month: 'long' });
-      const anio = fechaObj.getFullYear();
-      key = `${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anio}`;
-    }
+    if (!acc[monthKey]) acc[monthKey] = {};
+    if (!acc[monthKey][dateKey]) acc[monthKey][dateKey] = [];
 
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(evento);
+    acc[monthKey][dateKey].push(evento);
     return acc;
   }, {});
+
+  const renderBadge = (lista, colorTheme, title) => {
+    if (!lista || lista.length === 0) return null;
+    return (
+      <div className={`bg-${colorTheme}-900/30 border border-${colorTheme}-800/50 rounded-lg p-3 w-full`}>
+        <h5 className={`text-[10px] font-bold text-${colorTheme}-400 uppercase tracking-wider mb-2`}>{title}</h5>
+        <div className="flex flex-wrap gap-1.5">
+          {lista.map((item, i) => (
+            <span key={i} className="bg-slate-900 border border-slate-700 text-slate-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm">{item}</span>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col h-full bg-slate-950 relative">
@@ -150,81 +181,173 @@ export default function CronologiaClinica() {
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
-        <div className="max-w-4xl mx-auto relative">
-          {Object.keys(eventosAgrupados).length === 0 ? (
-            <div className="text-center py-24 text-slate-500 border-2 border-dashed border-slate-800 rounded-3xl mt-10">
-              <div className="bg-slate-900/50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-slate-800">
-                <Filter className="w-10 h-10 text-slate-600" />
+      {/* Timeline Layout */}
+      <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-slate-950">
+
+        {Object.keys(timelineTree).length === 0 ? (
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center">
+            <div className="text-center py-12 text-slate-500 border-2 border-dashed border-slate-800 rounded-3xl max-w-lg w-full">
+              <div className="bg-slate-900/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-slate-800">
+                <Filter className="w-8 h-8 text-slate-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-300 mb-2">Historial Clínico Vacío</h3>
-              <p className="text-sm text-slate-500 max-w-md mx-auto">Sube documentos en "Gestión de Expedientes" y asegúrate de que contengan fechas legibles. Los síntomas y tratamientos extraídos aparecerán aquí estructurados.</p>
+              <p className="text-sm text-slate-500 max-w-md mx-auto">
+                No hay eventos registrados después del 2023. Sube documentos con fechas válidas.
+              </p>
             </div>
-          ) : (
-            <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-[2px] before:bg-gradient-to-b before:from-transparent before:via-slate-700/50 before:to-transparent">
-
-              {Object.entries(eventosAgrupados).map(([mesAnio, eventosGrupo], groupIdx) => (
-                <div key={groupIdx} className="relative z-10">
-                  {/* Etiqueta de Agrupación (Mes / Año) */}
-                  <div className="flex justify-center mb-8 sticky top-20 z-20">
-                    <span className="bg-slate-900 border border-slate-700 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-black/20 uppercase tracking-widest backdrop-blur-md">
-                      {mesAnio}
-                    </span>
-                  </div>
-
-                  <div className="space-y-8">
-                    {eventosGrupo.map((evento, idx) => {
-                      const Icono = evento.icono;
-
-                      return (
-                        <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active transition-all duration-300 hover:-translate-y-1">
-                          {/* Timeline Dot */}
-                          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-950 bg-${evento.colorCls}-600 text-white shadow-lg shadow-${evento.colorCls}-900/50 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 relative left-0 md:left-1/2 transition-transform duration-300 group-hover:scale-110`}>
-                            <Icono className="w-4 h-4" />
-                          </div>
-
-                          {/* Timeline Card */}
-                          <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-slate-900 p-5 rounded-2xl shadow-md border border-slate-800 transition-all duration-300 group-hover:shadow-lg hover:shadow-${evento.colorCls}-900/20 group-hover:border-${evento.colorCls}-800/50`}>
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                              <time className="text-xs font-bold font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded shadow-inner inline-block">{evento.fecha}</time>
-                              <span className={`text-[10px] uppercase tracking-wider font-bold text-${evento.colorCls}-400 bg-${evento.colorCls}-900/30 border border-${evento.colorCls}-800/50 px-2.5 py-1 rounded-full whitespace-nowrap`}>
-                                {evento.categoriaPagina}
-                              </span>
-                            </div>
-
-                            <h4 className="text-lg font-bold text-slate-100 mb-4 capitalize leading-tight">{evento.entidad}</h4>
-
-                            <div className="mt-4 pt-4 border-t border-slate-800/50 flex items-center justify-between">
-                              <div className="flex flex-col">
-                                <span className="text-[10px] text-slate-600 font-medium uppercase tracking-wider mb-0.5">Fuente:</span>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                                  <FileText className="w-3.5 h-3.5 text-slate-500" />
-                                  <span className="truncate max-w-[140px] sm:max-w-[180px]" title={evento.nombreDoc}>
-                                    {evento.nombreDoc}
-                                  </span>
-                                  <span className="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono">P.{evento.pageNumber}</span>
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => setSelectedDocId(evento.docId)}
-                                className={`w-8 h-8 rounded-full bg-slate-950 text-slate-500 flex items-center justify-center transition-all duration-300 border border-slate-800 hover:bg-${evento.colorCls}-900/40 hover:text-${evento.colorCls}-400 hover:border-${evento.colorCls}-800 shrink-0`}
-                                title="Ver documento original"
-                              >
-                                <ChevronRight className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+          </div>
+        ) : (
+          <>
+            {/* Horizontal Months Timeline (Top Nav for Timeline) */}
+            <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-800 bg-slate-900/50 overflow-y-auto shrink-0 flex flex-row md:flex-col items-center md:items-stretch py-4 md:py-6 px-2 gap-2">
+              {Object.keys(timelineTree).map(mesAnio => (
+                <button
+                  key={mesAnio}
+                  onClick={() => {
+                    setExpandedMonth(mesAnio);
+                    setSelectedDate(null);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center justify-between border ${
+                    expandedMonth === mesAnio
+                    ? 'bg-indigo-900/40 border-indigo-800 text-indigo-100 shadow-md ring-1 ring-indigo-500/50'
+                    : 'bg-transparent border-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span className="font-bold text-sm tracking-wide capitalize">{mesAnio}</span>
+                  {expandedMonth === mesAnio && <ChevronRight className="w-4 h-4 text-indigo-400" />}
+                </button>
               ))}
-
             </div>
-          )}
-        </div>
+
+            {/* Dates & Events Area for Expanded Month */}
+            <div className="flex-1 flex flex-col overflow-hidden bg-slate-950">
+               {expandedMonth && timelineTree[expandedMonth] ? (
+                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+                   {/* Vertical List of Exact Dates */}
+                   <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-slate-800/50 overflow-y-auto bg-slate-950/50 p-4 space-y-3 shrink-0">
+                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 px-2">
+                       Eventos en {expandedMonth}
+                     </h3>
+
+                     {Object.keys(timelineTree[expandedMonth]).map((fechaExacta, idx) => {
+                       const eventosEnFecha = timelineTree[expandedMonth][fechaExacta];
+                       const isSelected = selectedDate === fechaExacta;
+
+                       return (
+                         <button
+                           key={idx}
+                           onClick={() => setSelectedDate(isSelected ? null : fechaExacta)}
+                           className={`w-full text-left p-4 rounded-xl transition-all duration-300 border shadow-sm group ${
+                             isSelected
+                             ? 'bg-slate-800 border-indigo-600/50 ring-1 ring-indigo-500/30'
+                             : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                           }`}
+                         >
+                           <div className="flex items-center gap-3 mb-2">
+                             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-950 border-slate-700 text-slate-400 group-hover:border-slate-500'}`}>
+                               <Calendar className="w-4 h-4" />
+                             </div>
+                             <div>
+                               <div className={`font-bold text-sm leading-tight ${isSelected ? 'text-indigo-100' : 'text-slate-300 group-hover:text-slate-100'} capitalize`}>
+                                 {fechaExacta.split(',')[0]}
+                               </div>
+                               <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                 {fechaExacta.split(',')[1]}
+                               </div>
+                             </div>
+                           </div>
+
+                           {/* Mini indicators of what happened */}
+                           <div className="pl-11 flex gap-1.5 flex-wrap">
+                             {eventosEnFecha.map((ev, i) => {
+                               const MiniIcon = ev.icono;
+                               return (
+                                 <span key={i} className={`bg-${ev.colorCls}-900/30 text-${ev.colorCls}-400 border border-${ev.colorCls}-800/50 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex items-center gap-1`}>
+                                   <MiniIcon className="w-2.5 h-2.5" />
+                                   {ev.categoriaPagina.split(' ')[0]}
+                                 </span>
+                               );
+                             })}
+                           </div>
+                         </button>
+                       );
+                     })}
+                   </div>
+
+                   {/* Detail View for Selected Date */}
+                   <div className="flex-1 overflow-y-auto bg-slate-950 relative p-6">
+                      {!selectedDate ? (
+                        <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
+                          <Activity className="w-12 h-12 text-slate-800" />
+                          <p className="font-medium text-sm">Selecciona una fecha de la izquierda para ver el detalle de los eventos.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-8 max-w-3xl mx-auto">
+                          <div className="border-b border-slate-800 pb-4">
+                            <h2 className="text-2xl font-bold text-slate-100 capitalize">{selectedDate}</h2>
+                            <p className="text-slate-500 text-sm mt-1">
+                              {timelineTree[expandedMonth][selectedDate].length} evento(s) clínico(s) registrado(s) en esta fecha.
+                            </p>
+                          </div>
+
+                          {timelineTree[expandedMonth][selectedDate].map((evento, idx) => {
+                             const Icono = evento.icono;
+
+                             return (
+                               <div key={idx} className={`bg-slate-900 border border-${evento.colorCls}-800/50 rounded-2xl shadow-lg shadow-black/20 overflow-hidden`}>
+                                 {/* Header Evento */}
+                                 <div className={`bg-${evento.colorCls}-900/20 border-b border-${evento.colorCls}-800/50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+                                   <div className="flex items-center gap-4">
+                                     <div className={`w-12 h-12 rounded-xl bg-${evento.colorCls}-600 flex items-center justify-center shrink-0 shadow-lg shadow-${evento.colorCls}-900/50`}>
+                                        <Icono className="w-6 h-6 text-white" />
+                                     </div>
+                                     <div>
+                                        <h3 className="text-xl font-bold text-slate-100">{evento.categoriaPagina}</h3>
+                                        <p className={`text-sm text-${evento.colorCls}-400 font-medium`}>Confianza OCR: {Math.round(evento.confidence)}%</p>
+                                     </div>
+                                   </div>
+
+                                   <button
+                                     onClick={() => setSelectedDocId(evento.docId)}
+                                     className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-lg transition-colors border border-slate-700 hover:border-slate-500 shrink-0"
+                                   >
+                                     <FileText className="w-4 h-4" />
+                                     Ver Documento
+                                   </button>
+                                 </div>
+
+                                 {/* Body Evento (Entidades Extraídas) */}
+                                 <div className="p-5 space-y-4">
+                                    <div className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2 flex items-center gap-2">
+                                       <Activity className="w-4 h-4" /> Información Extraída Automáticamente
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                       {renderBadge(evento.entidadesOriginales.sintomas_y_diagnosticos, 'rose', 'Motivo de Consulta / Diagnóstico')}
+                                       {renderBadge(evento.entidadesOriginales.medicamentos_y_tratamientos, 'emerald', 'Tratamiento / Medicamentos')}
+                                       <div className="md:col-span-2">
+                                         {renderBadge(evento.entidadesOriginales.procedimientos_y_examenes, 'blue', 'Exámenes / Procedimientos')}
+                                       </div>
+                                    </div>
+
+                                    {(!evento.entidadesOriginales.sintomas_y_diagnosticos?.length && !evento.entidadesOriginales.medicamentos_y_tratamientos?.length && !evento.entidadesOriginales.procedimientos_y_examenes?.length) && (
+                                      <div className="bg-slate-950 border border-slate-800 rounded-lg p-6 text-center">
+                                        <p className="text-slate-500 text-sm italic">No se detectaron entidades clínicas específicas estructuradas en esta página. Revisa el documento original.</p>
+                                      </div>
+                                    )}
+                                 </div>
+                               </div>
+                             );
+                          })}
+                        </div>
+                      )}
+                   </div>
+                 </div>
+               ) : null}
+            </div>
+          </>
+        )}
       </div>
 
       {selectedDocId && (
