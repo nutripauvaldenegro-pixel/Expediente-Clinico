@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDb } from '../db';
 import { procesarYGuardarDocumento, eliminarDocumento } from '../services/dbServices';
-import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, File, Activity, FileText, Trash2 } from 'lucide-react';
+import { FileUp, Search, Calendar, Tag, ShieldAlert, CheckCircle2, ChevronRight, ChevronDown, File, Activity, FileText, Trash2 } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
 export default function DocumentManager() {
@@ -131,7 +131,31 @@ export default function DocumentManager() {
   const pendingCount = documents.filter(doc => doc.category === 'Desconocido/Pendiente' || !doc.date).length;
 
   const CategoryBadge = ({ category, docId }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Render component differently for table structure so it breaks out of hidden overflow if any
+    // actually, we can append to body or use fixed positioning, but since it's inside a table with responsive scroll, we might need a portal or clever positioning.
+    // Given standard Tailwind, if the table has overflow-x-auto, an absolute child might be clipped.
+
     let colorClass = 'bg-slate-800 text-slate-300 border-slate-700'; // Default
+    let label = category;
+
+    const options = [
+      { value: 'Atencion Medica', label: 'Atención Médica' },
+      { value: 'Reserva de Hora', label: 'Reserva de Hora' },
+      { value: 'Resultado de Examen', label: 'Resultado de Examen' },
+      { value: 'Orden de Examen', label: 'Orden de Examen' },
+      { value: 'Tratamiento', label: 'Tratamiento' },
+      { value: 'Informe', label: 'Informe Médico' },
+      { value: 'Certificado', label: 'Certificado' },
+      { value: 'Receta', label: 'Receta Médica' },
+      { value: 'Desconocido/Pendiente', label: '⚠ Pendiente Revisión' }
+    ];
+
+    const currentOption = options.find(o => o.value === category);
+    if (currentOption) {
+      label = currentOption.label;
+    }
 
     switch(category) {
       case 'Atencion Medica': colorClass = 'bg-violet-900/40 text-violet-300 border-violet-800'; break;
@@ -145,22 +169,43 @@ export default function DocumentManager() {
       case 'Desconocido/Pendiente': colorClass = 'bg-red-900/40 text-red-400 border-red-800 font-bold animate-pulse'; break;
     }
 
+    const handleSelect = (newValue) => {
+      handleCorrection(docId, newValue);
+      setIsOpen(false);
+    };
+
     return (
-      <select
-        value={category}
-        onChange={(e) => handleCorrection(docId, e.target.value)}
-        className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClass} focus:ring-2 focus:ring-slate-500 outline-none transition-colors cursor-pointer hover:shadow-sm w-full max-w-[180px] truncate`}
-      >
-        <option value="Atencion Medica">Atención Médica</option>
-        <option value="Reserva de Hora">Reserva de Hora</option>
-        <option value="Resultado de Examen">Resultado de Examen</option>
-        <option value="Orden de Examen">Orden de Examen</option>
-        <option value="Tratamiento">Tratamiento</option>
-        <option value="Informe">Informe Médico</option>
-        <option value="Certificado">Certificado</option>
-        <option value="Receta">Receta Médica</option>
-        <option value="Desconocido/Pendiente">⚠ Pendiente Revisión</option>
-      </select>
+      <div className="relative inline-block w-full max-w-[200px]">
+        {isOpen && (
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+        )}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center justify-between text-xs font-semibold px-3 py-1.5 rounded-full border ${colorClass} focus:ring-2 focus:ring-slate-500 outline-none transition-colors cursor-pointer hover:shadow-sm w-full truncate z-40 relative`}
+        >
+          <span className="truncate">{label}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isOpen && (
+          <div className="fixed mt-1 w-[220px] bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 overflow-y-auto max-h-60 animate-in fade-in slide-in-from-top-2">
+            <ul className="py-1">
+              {options.map((opt) => (
+                <li key={opt.value}>
+                  <button
+                    onClick={() => handleSelect(opt.value)}
+                    className={`w-full text-left px-4 py-2 text-xs font-medium transition-colors hover:bg-slate-700 ${
+                      category === opt.value ? 'bg-indigo-900/40 text-indigo-300' : 'text-slate-300'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     );
   };
 
