@@ -1,7 +1,7 @@
 // OCR Service using Gemini 2.5 Flash Lite
 
 // La API Key de Gemini debería ser configurada en el entorno (ej: .env) para no subirla al repo
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AlzaSyBebt2xC8ziXViXjHkG7-4eLXvMNZ_Xx9w";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 // Helper para convertir File/Blob a Base64 para Gemini
@@ -30,6 +30,10 @@ export const procesarOCR = async (file, onProgress) => {
 
     if (onProgress) {
        onProgress(0.5); // Imagen codificada, enviando
+    }
+
+    if (!GEMINI_API_KEY) {
+      throw new Error("API Key de Gemini no configurada en VITE_GEMINI_API_KEY");
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
