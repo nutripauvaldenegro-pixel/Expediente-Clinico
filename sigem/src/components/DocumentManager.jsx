@@ -149,6 +149,7 @@ export default function DocumentManager() {
       { value: 'Informe', label: 'Informe Médico' },
       { value: 'Certificado', label: 'Certificado' },
       { value: 'Receta', label: 'Receta Médica' },
+      { value: 'Otro', label: 'Otro' },
       { value: 'Desconocido/Pendiente', label: '⚠ Pendiente Revisión' }
     ];
 
@@ -166,6 +167,7 @@ export default function DocumentManager() {
       case 'Informe': colorClass = 'bg-pink-900/40 text-pink-300 border-pink-800'; break;
       case 'Certificado': colorClass = 'bg-amber-900/40 text-amber-300 border-amber-800'; break;
       case 'Receta': colorClass = 'bg-indigo-900/40 text-indigo-300 border-indigo-800'; break;
+      case 'Otro': colorClass = 'bg-slate-700/50 text-slate-300 border-slate-600'; break;
       case 'Desconocido/Pendiente': colorClass = 'bg-red-900/40 text-red-400 border-red-800 font-bold animate-pulse'; break;
     }
 
