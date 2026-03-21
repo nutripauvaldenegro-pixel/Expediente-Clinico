@@ -37,8 +37,8 @@ export default function CronologiaClinica() {
               if (!pag.fecha) return;
 
               const fechaObj = new Date(pag.fecha);
-              // Filtrar solo años mayores a 2023
-              if (isNaN(fechaObj.getTime()) || fechaObj.getFullYear() <= 2023) return;
+              // Validar fecha real
+              if (isNaN(fechaObj.getTime())) return;
 
               // Para la vista de detalle, no expandimos en 1 evento por entidad.
               // Agrupamos la página entera como 1 hito temporal con toda su metadata rica.
@@ -192,7 +192,7 @@ export default function CronologiaClinica() {
               </div>
               <h3 className="text-xl font-bold text-slate-300 mb-2">Historial Clínico Vacío</h3>
               <p className="text-sm text-slate-500 max-w-md mx-auto">
-                No hay eventos registrados después del 2023. Sube documentos con fechas válidas.
+                No hay eventos registrados. Sube documentos en "Gestión de Expedientes" con fechas legibles.
               </p>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function CronologiaClinica() {
 
                    {/* Detail View for Selected Date */}
                    <div className="flex-1 overflow-y-auto bg-slate-950 relative p-6">
-                      {!selectedDate ? (
+                      {!selectedDate || !timelineTree[expandedMonth][selectedDate] ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
                           <Activity className="w-12 h-12 text-slate-800" />
                           <p className="font-medium text-sm">Selecciona una fecha de la izquierda para ver el detalle de los eventos.</p>
