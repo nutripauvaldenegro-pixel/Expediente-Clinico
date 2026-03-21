@@ -335,22 +335,6 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
                       </div>
                     </div>
 
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Activity className="w-4 h-4" /> Motor Heurístico (Score Global Original)
-                      </h4>
-                      <div className="space-y-2 border border-slate-800 rounded-lg p-4 bg-slate-950">
-                        {Object.entries(docData.metadata?.puntuaciones_heuristica || {}).map(([cat, score]) => (
-                          <div key={cat} className="flex justify-between items-center text-sm border-b border-slate-800 last:border-0 pb-2 last:pb-0">
-                            <span className="text-slate-600">{cat}</span>
-                            <span className={`font-mono font-medium px-2 py-0.5 rounded ${score > 0 ? 'bg-indigo-900 text-indigo-300' : score < 0 ? 'bg-slate-700 text-slate-500' : 'bg-slate-900 border text-slate-500'}`}>
-                              {score > 0 ? '+' : ''}{score}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
                   </div>
                 );
               })() : (
