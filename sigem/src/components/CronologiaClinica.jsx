@@ -178,16 +178,56 @@ export default function CronologiaClinica() {
     return acc;
   }, {});
 
+  const themeClasses = {
+    rose: {
+      wrapper: "bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50",
+      title: "text-rose-400",
+      dot: "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]",
+      pill: "border-rose-500/30 text-rose-300"
+    },
+    purple: {
+      wrapper: "bg-purple-500/10 border-purple-500/30 hover:border-purple-500/50",
+      title: "text-purple-400",
+      dot: "bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]",
+      pill: "border-purple-500/30 text-purple-300"
+    },
+    emerald: {
+      wrapper: "bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50",
+      title: "text-emerald-400",
+      dot: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]",
+      pill: "border-emerald-500/30 text-emerald-300"
+    },
+    amber: {
+      wrapper: "bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50",
+      title: "text-amber-400",
+      dot: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]",
+      pill: "border-amber-500/30 text-amber-300"
+    },
+    blue: {
+      wrapper: "bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50",
+      title: "text-blue-400",
+      dot: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]",
+      pill: "border-blue-500/30 text-blue-300"
+    },
+    cyan: {
+      wrapper: "bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50",
+      title: "text-cyan-400",
+      dot: "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]",
+      pill: "border-cyan-500/30 text-cyan-300"
+    }
+  };
+
   const renderBadge = (lista, colorTheme, title) => {
     if (!lista || lista.length === 0) return null;
+    const theme = themeClasses[colorTheme] || themeClasses['blue'];
     return (
-      <div className={`bg-${colorTheme}-500/10 border border-${colorTheme}-500/30 rounded-xl p-4 flex flex-col hover:border-${colorTheme}-500/50 transition-colors shadow-sm`}>
-        <h5 className={`text-[10px] font-bold text-${colorTheme}-400 uppercase tracking-wider mb-3 flex items-center gap-1.5`}>
-           <span className={`w-2 h-2 rounded-full bg-${colorTheme}-500 shadow-[0_0_8px_rgba(var(--tw-colors-${colorTheme}-500),0.6)]`}></span> {title}
+      <div className={`border rounded-xl p-4 flex flex-col transition-colors shadow-sm ${theme.wrapper}`}>
+        <h5 className={`text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${theme.title}`}>
+           <span className={`w-2 h-2 rounded-full ${theme.dot}`}></span> {title}
         </h5>
         <div className="flex flex-wrap gap-1.5 flex-1 content-start">
           {lista.map((item, i) => (
-            <span key={i} className={`bg-slate-900/80 border border-${colorTheme}-500/30 text-${colorTheme}-300 px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm`}>{item}</span>
+            <span key={i} className={`bg-slate-900/80 border px-2 py-0.5 rounded text-[11px] font-medium shadow-sm backdrop-blur-sm ${theme.pill}`}>{item}</span>
           ))}
         </div>
       </div>
