@@ -252,7 +252,7 @@ export default function DocumentManager() {
             <FileUp className="w-5 h-5" />
           )}
           {uploading ? 'Procesando...' : 'Cargar Archivo'}
-          <input type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+          <input id="file-upload" name="file-upload" type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={handleFileUpload} disabled={uploading} />
 
           {/* Progress Popover */}
           {uploading && (
@@ -284,6 +284,8 @@ export default function DocumentManager() {
             <Search className="h-4 w-4 text-slate-500" />
           </div>
           <input
+            id="search-documents"
+            name="search-documents"
             type="text"
             placeholder="Buscar por nombre o tipo de documento..."
             value={searchTerm}

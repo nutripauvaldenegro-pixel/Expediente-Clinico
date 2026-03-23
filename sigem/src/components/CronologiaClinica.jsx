@@ -270,6 +270,8 @@ export default function CronologiaClinica() {
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
             <input
+              id="buscar-timeline"
+              name="buscar-timeline"
               type="text"
               placeholder="Buscar síntoma, medicamento, examen..."
               value={filtroTexto}
