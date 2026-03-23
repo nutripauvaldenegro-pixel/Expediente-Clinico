@@ -107,6 +107,8 @@ const PdfThumbnail = ({ pdfDoc, pageNumber, scale = 0.3 }) => {
   return <canvas ref={canvasRef} className="bg-slate-900 shadow-sm rounded-sm object-contain w-12 h-auto" />;
 };
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
 export default function DocumentViewerModal({ documentId, db, onClose }) {
   const [docData, setDocData] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
@@ -136,19 +138,30 @@ export default function DocumentViewerModal({ documentId, db, onClose }) {
           });
 
           if (row.archivo_blob) {
-            if (row.archivo_mime === 'application/pdf') {
-              // Preparar arraybuffer y parsear PDF UNA SOLA VEZ
-              const data = new Uint8Array(row.archivo_blob);
-              pdfjsLib.getDocument({ data }).promise.then(pdf => {
-                setPdfDoc(pdf);
-                setNumPages(pdf.numPages);
-              }).catch(err => {
-                console.error("Error parsing PDF data", err);
-              });
-            } else {
-              const blob = new Blob([row.archivo_blob], { type: row.archivo_mime || 'application/octet-stream' });
-              currentUrl = URL.createObjectURL(blob);
-              setFileUrl(currentUrl);
+            if (typeof row.archivo_blob === 'string' && row.archivo_blob.startsWith('/uploads/')) {
+               // Nuevo formato: es una ruta externa en el servidor Node.js
+               const fullUrl = `${BACKEND_URL}${row.archivo_blob}`;
+               if (row.archivo_mime === 'application/pdf') {
+                 pdfjsLib.getDocument(fullUrl).promise.then(pdf => {
+                   setPdfDoc(pdf);
+                   setNumPages(pdf.numPages);
+                 }).catch(err => console.error("Error parsing PDF via URL", err));
+               } else {
+                 setFileUrl(fullUrl);
+               }
+            } else if (row.archivo_blob instanceof Uint8Array || row.archivo_blob.byteLength) {
+               // Formato antiguo legado (Uint8Array guardado como blob)
+               if (row.archivo_mime === 'application/pdf') {
+                 const data = new Uint8Array(row.archivo_blob);
+                 pdfjsLib.getDocument({ data }).promise.then(pdf => {
+                   setPdfDoc(pdf);
+                   setNumPages(pdf.numPages);
+                 }).catch(err => console.error("Error parsing PDF data", err));
+               } else {
+                 const blob = new Blob([row.archivo_blob], { type: row.archivo_mime || 'application/octet-stream' });
+                 currentUrl = URL.createObjectURL(blob);
+                 setFileUrl(currentUrl);
+               }
             }
           }
         }

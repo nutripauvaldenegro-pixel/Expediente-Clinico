@@ -59,6 +59,18 @@ export const procesarOCR = async (file, onProgress) => {
       }
     };
 
+
+  // Mock gemini api for fast local test
+  if (import.meta.env.VITE_MOCK_GEMINI === 'true') {
+     return {
+        textoPlano: "Ibuprofeno 400mg Diagnostico Mock",
+        textoNormalizado: "ibuprofeno 400mg diagnostico mock",
+        coordenadas: [],
+        confidence: 90,
+        ocrDataRaw: '[]'
+     };
+  }
+
     const response = await fetch(url, {
       method: "POST",
       headers: {

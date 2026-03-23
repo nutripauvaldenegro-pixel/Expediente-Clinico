@@ -4,11 +4,36 @@ import { clasificarDocumento } from './clasificacion';
 import { extraerFechaPrincipal, extraerDemograficos } from './extraccion';
 import { extraerEntidadesClinicas } from './diccionarioClinico';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
 export const procesarYGuardarDocumento = async (file, onProgress) => {
   const db = getDb();
 
   // 1. Ingesta (OCR y Hash)
   const ocrResult = await procesarDocumento(file, onProgress);
+
+  // Guardar archivo físico en el backend externo
+  if (onProgress) onProgress({ step: 'Subiendo archivo físico al servidor...', progress: 0 });
+
+  const formData = new FormData();
+  formData.append('documento', file);
+
+  let rutaArchivoFisico = null;
+  try {
+    const uploadRes = await fetch(`${BACKEND_URL}/api/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!uploadRes.ok) throw new Error("Error del servidor al subir el archivo.");
+
+    const uploadData = await uploadRes.json();
+    rutaArchivoFisico = uploadData.filepath; // ej: /uploads/123456-archivo.pdf
+    if (onProgress) onProgress({ step: 'Archivo físico guardado.', progress: 100 });
+  } catch (error) {
+    console.error("Fallo subida a backend:", error);
+    throw new Error("No se pudo guardar el archivo en el servidor externo. Verifique que el servidor (puerto 3001) esté corriendo.");
+  }
 
   // 2. Clasificación Heurística
   let clasificacion = clasificarDocumento(ocrResult.textoNormalizado);
@@ -91,7 +116,12 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
       clasificacion.categoria,
       ocrResult.textoPlano,
       JSON.stringify(metadata),
-      ocrResult.archivo_blob,
+      // archivo_blob fue modificado en la DB para almacenar BLOBs (Uint8Array).
+      // Como ahora es una ruta string, para no re-crear la base de datos (y evitar romper la estructura vieja)
+      // podemos guardar la ruta string en metadata_json O convertir el string a Uint8Array temporalmente.
+      // Lo ideal es meterlo en metadata y guardar null en archivo_blob.
+      // O en archivo_blob, ya que SQLite es flexible con tipos. Guardemos la ruta string como string en SQLite.
+      rutaArchivoFisico,
       ocrResult.archivo_mime
     ]);
 
@@ -128,6 +158,16 @@ export const procesarYGuardarDocumento = async (file, onProgress) => {
 export const eliminarDocumento = async (id) => {
   const db = getDb();
   try {
+    // Buscar la ruta física del documento antes de borrarlo
+    const stmt = db.prepare(`SELECT archivo_blob FROM documentos WHERE id = ?`);
+    stmt.bind([id]);
+    let rutaFisica = null;
+    if (stmt.step()) {
+      const result = stmt.getAsObject();
+      rutaFisica = result.archivo_blob;
+    }
+    stmt.free();
+
     db.run('BEGIN TRANSACTION');
     // Eliminar eventos cronológicos asociados por la llave foránea
     db.run('DELETE FROM eventos_cronologia WHERE documento_id = ?', [id]);
@@ -135,11 +175,23 @@ export const eliminarDocumento = async (id) => {
     db.run('DELETE FROM documentos WHERE id = ?', [id]);
     db.run('COMMIT');
 
+    // Si había una ruta física y es un string (no un Uint8Array legado), intentar borrarlo en el backend
+    if (typeof rutaFisica === 'string' && rutaFisica.startsWith('/uploads/')) {
+       const filename = rutaFisica.replace('/uploads/', '');
+       try {
+         await fetch(`${BACKEND_URL}/api/files/${filename}`, {
+           method: 'DELETE'
+         });
+       } catch (err) {
+         console.error("Error contactando al backend para eliminar el archivo físico:", err);
+       }
+    }
+
     await saveDb();
     return true;
   } catch (error) {
     db.run('ROLLBACK');
-    console.error("Error al eliminar el documento:", error);
+    console.error("Error al eliminar el documento en la base de datos:", error);
     throw error;
   }
 };
