@@ -23,25 +23,33 @@ export default function CronologiaClinica() {
 
     const partes = normalizada.split('-');
     if (partes.length === 3) {
-      // Formato YY-MM-DD (Ej. 25-12-30 -> 2025-12-30)
-      if (partes[0].length === 2 && parseInt(partes[0]) > 20) {
-        return new Date(`20${partes[0]}-${partes[1]}-${partes[2]}`);
+      // Si el año viene al principio YYYY-MM-DD (ej: 2025-12-30)
+      if (partes[0].length === 4) {
+        return new Date(`${partes[0]}-${partes[1]}-${partes[2]}T12:00:00Z`);
       }
-      // Formato DD-MM-YYYY o DD-MM-YY (Ej. 30-12-2025 o 30-12-25)
-      if (partes[0].length <= 2 && (partes[2].length === 4 || partes[2].length === 2)) {
-         let year = partes[2].length === 2 ? `20${partes[2]}` : partes[2];
-         return new Date(`${year}-${partes[1]}-${partes[0]}`);
+
+      // Si el año viene al final DD-MM-YYYY (ej: 30-12-2025)
+      if (partes[2].length === 4) {
+        return new Date(`${partes[2]}-${partes[1]}-${partes[0]}T12:00:00Z`);
+      }
+
+      // Formatos cortos con año al final DD-MM-YY (ej: 30-12-25)
+      if (partes[0].length <= 2 && partes[2].length === 2) {
+         let year = `20${partes[2]}`;
+         return new Date(`${year}-${partes[1]}-${partes[0]}T12:00:00Z`);
       }
     }
 
     // Fallback nativo
-    return new Date(dateStr);
+    if (dateStr.includes("T")) return new Date(dateStr);
+    return new Date(dateStr + "T12:00:00Z");
   };
 
   const cargarCronologia = () => {
     try {
       const db = getDb();
-      const res = db.exec(`SELECT id, nombre_archivo, metadata_json FROM documentos ORDER BY id DESC`);
+      // Added categoria_sugerida and fecha_principal to the query to respect user overrides
+      const res = db.exec(`SELECT id, nombre_archivo, metadata_json, categoria_sugerida, fecha_principal FROM documentos ORDER BY id DESC`);
 
       if (!res.length) return;
 
@@ -50,21 +58,33 @@ export default function CronologiaClinica() {
       res[0].values.forEach(row => {
         const docId = row[0];
         const nombreDoc = row[1];
+        const globalCategoria = row[3];
+
+        // If the document has a global date (e.g. valid format YYYY-MM-DD), we should ideally use it if the page date is missing or invalid.
+        // Or we can just use the global date directly to keep everything synced with the document table. Let's use it as a fallback or override.
+        const globalFechaStr = row[4];
 
         try {
           const metadata = JSON.parse(row[2]);
           if (metadata.paginas_granulares) {
             metadata.paginas_granulares.forEach(pag => {
 
-              let fechaObj = parseDateRobust(pag.fecha);
-              let fechaStr = pag.fecha;
+              // Si la página no tiene fecha o no pudo ser extraída por OCR, usamos la global si existe.
+              // Si el usuario edita la fecha desde un input en el futuro, se guardará en globalFechaStr.
+              let finalFechaStr = pag.fecha || globalFechaStr;
+              let fechaObj = parseDateRobust(finalFechaStr);
+              let fechaStr = finalFechaStr;
 
               // Validar fecha real. Si no hay, o es inválida, agrupar bajo "Sin Fecha"
-              if (!pag.fecha || isNaN(fechaObj.getTime())) {
+              if (!finalFechaStr || isNaN(fechaObj.getTime())) {
                  // Asignamos una fecha arbitraria antigua (ej: año 1900) para que se ordene al final cronológicamente.
                  fechaObj = new Date("1900-01-01T00:00:00");
                  fechaStr = "Fecha Desconocida";
               }
+
+              // Override the category if the global one differs (user changed it in the Document Manager Dropdown)
+              // Or just always use the global category so it matches the Document Viewer exactly.
+              const categoryToDisplay = globalCategoria || pag.categoria || "Documento";
 
               // Para la vista de detalle, no expandimos en 1 evento por entidad.
               // Agrupamos la página entera como 1 hito temporal con toda su metadata rica.
@@ -76,7 +96,7 @@ export default function CronologiaClinica() {
               let mainIcon = FileText;
               let colorCls = 'slate';
               let mainType = 'documento';
-              let mainTitle = `Registro: ${pag.categoria}`;
+              let mainTitle = categoryToDisplay;
 
               if (pag.entidades?.sintomas?.length > 0 || pag.entidades?.sintomas_y_diagnosticos?.length > 0) {
                 mainIcon = Heart; colorCls = 'rose'; mainType = 'sintomas'; mainTitle = pag.entidades?.sintomas?.[0] || pag.entidades?.sintomas_y_diagnosticos?.[0];
@@ -98,7 +118,7 @@ export default function CronologiaClinica() {
                 pageNumber: pag.pageNumber,
                 fecha: fechaStr,
                 fechaObj: fechaObj,
-                categoriaPagina: pag.categoria,
+                categoriaPagina: categoryToDisplay,
                 tipoEntidad: mainType, // Primary classification for filtering
                 entidad: mainTitle, // Primary title
                 icono: mainIcon,
