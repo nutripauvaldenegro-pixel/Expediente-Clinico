@@ -44,7 +44,7 @@ const esFechaValida = (fechaStr) => {
 };
 
 // Busca un patrón de fecha alrededor de una palabra clave (ej. "fecha")
-export const extraerFechaPrincipal = (textoPlano, coordenadas) => {
+export const extraerFechaPrincipal = (textoPlano, coordenadas = []) => {
   const texto = textoPlano || "";
   const normalizado = texto.toLowerCase();
   const indexFecha = normalizado.indexOf("fecha");
@@ -72,7 +72,7 @@ export const extraerFechaPrincipal = (textoPlano, coordenadas) => {
   return buscarCualquierFecha(textoPlano, coordenadas);
 };
 
-const buscarCualquierFecha = (texto, coordenadas) => {
+const buscarCualquierFecha = (texto, coordenadas = []) => {
   const regexFechas = /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(\d{4}-\d{2}-\d{2})/g;
   const matches = [...texto.matchAll(regexFechas)];
 
